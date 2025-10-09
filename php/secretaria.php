@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <title>Secretaria — FETEL</title>
     <meta name="description" content="Serviços da Secretaria da FETEL">
-    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/index.css">
   </head>
   <body>
     <header class="site-header">
@@ -22,7 +22,6 @@
           <ul class="nav-list">
             <li><a href="../index.html#servicos">Serviços</a></li>
             <li><a href="../php/secretaria.php" class="active-link">Secretaria</a></li>
-            <li><a href="../index.html#contato">Fale Conosco</a></li>
             <li><a href="../index.html#biblioteca">Biblioteca</a></li>
             <li><a href="../index.html#sobre">Sobre a Escola</a></li>
           </ul>

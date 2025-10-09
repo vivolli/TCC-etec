@@ -1,12 +1,8 @@
 <?php
-// header.php - cabeçalho reutilizável
-// Nota: adicionamos links mínimos de CSS e fontes aqui para que páginas PHP que incluem o header
-// recebam o mesmo estilo do restante do site. Não adicionamos <head> completo para não conflitar
-// com o index.html que já contém um <head> pleno.
+// header.php - cabeçalho reutilizavel
 ?>
 
-<!-- estilos e fontes (mínimo necessário) -->
-<link rel="stylesheet" href="/TCC/css/style.css">
+<link rel="stylesheet" href="/TCC/css/index.css">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
@@ -29,7 +25,6 @@
       <ul class="nav-list">
         <li><a href="/TCC/index.html#destaques">Notícias</a></li>
         <li><a href="/TCC/php/secretaria.php">Secretaria</a></li>
-        <li><a href="/TCC/php/fale-conosco/fale-conosco.php">Fale Conosco</a></li>
         <li><a href="/TCC/index.html#biblioteca">Biblioteca</a></li>
         <li><a href="/TCC/index.html#sobre">Sobre a Escola</a></li>
       </ul>
