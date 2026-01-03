@@ -1,0 +1,149 @@
+:root{
+  --blue:#003d99;
+  --blue-600:#0056d6;
+  --white:#ffffff;
+  --muted:#6b7280;
+}
+
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
+  font-family: 'Inter', 'Poppins', system-ui, -apple-system, 'Segoe UI', Roboto, Arial;
+  background: linear-gradient(180deg, #f7fbff 0%, #ffffff 100%);
+  color:#122;
+  -webkit-font-smoothing:antialiased;
+}
+
+.login-page{
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:18px;
+  padding:28px 16px;
+}
+
+.brand-link{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  text-decoration:none;
+  color:var(--blue);
+  position:absolute;
+  left:24px;
+  top:18px;
+}
+
+.brand-link .brand{font-weight:800}
+
+.login-card{
+  width:100%;
+  max-width:420px;
+  background:#fff;
+  border:1px solid #eef4fb;
+  border-radius:12px;
+  padding:28px;
+  box-shadow: 0 10px 30px rgba(4,16,46,0.06);
+}
+
+.login-card h1{margin:0 0 6px; color:var(--blue); font-size:1.4rem}
+.login-card .lead{margin:0 0 18px; color:var(--muted); font-size:0.95rem}
+
+.login-form label{display:block; font-weight:600; margin:12px 0 6px; color:#254060}
+.login-form input[type="email"], .login-form input[type="password"]{
+  width:100%;
+  padding:12px 14px;
+  border-radius:8px;
+  border:1px solid #dfe7f3;
+  font-size:0.98rem;
+}
+
+.login-form input[type="text"], .login-form input[type="password"], .login-form input.masked{
+  font-family: inherit;
+  font-size: 0.98rem;
+  line-height: 1.2;
+  letter-spacing: normal;
+}
+
+.login-form input.masked{
+  -webkit-text-security: disc; 
+}
+
+.password-field{position:relative}
+.password-field .field{
+  position:absolute;
+  inset:0; 
+  width:100%;
+  height:100%;
+  box-sizing:border-box;
+  margin:0;
+  padding:12px 14px;
+  border-radius:8px;
+  border:1px solid #dfe7f3;
+  font-size:0.98rem;
+  background:transparent;
+}
+.password-field .masked{opacity:1; pointer-events:auto; z-index:2}
+.password-field .visible{opacity:0; pointer-events:none; z-index:1}
+.password-field input::placeholder{color:#9aa7bf}
+.toggle-password{
+  position:absolute;
+  right:6px;
+  top:50%;
+  transform:translateY(-50%);
+  background:transparent;
+  border:0;
+  color:var(--blue-600);
+  width:36px;
+  height:36px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding:0;
+  border-radius:8px;
+  cursor:pointer;
+  z-index:3;
+}
+.toggle-password svg{width:20px; height:20px; display:block}
+.toggle-password:focus{outline:2px solid rgba(0,86,179,0.12); outline-offset:3px}
+
+.form-row{display:flex; align-items:center; justify-content:space-between; margin:12px 0 18px}
+.checkbox{display:flex; align-items:center; gap:8px; font-size:0.95rem; color:var(--muted)}
+.checkbox input{width:16px; height:16px}
+.forgot{color:var(--blue-600); text-decoration:none; font-size:0.95rem}
+.forgot:hover{text-decoration:underline}
+
+.btn{
+  display:inline-block;
+  padding:14px 20px;
+  border-radius:10px;
+  border:1px solid var(--blue);
+  background:transparent;
+  color:var(--blue);
+  font-weight:700;
+  cursor:pointer;
+  font-size:1rem;
+  transition:all .14s ease;
+}
+.btn.primary{
+  display:block;
+  width:100%;
+  padding:14px 20px;
+  border-radius:10px;
+  background:var(--blue);
+  color:var(--white);
+  border-color:transparent;
+  box-shadow:0 10px 30px rgba(0,61,153,0.12);
+  font-size:1.02rem;
+}
+.btn.primary:hover{transform:translateY(-2px);box-shadow:0 12px 34px rgba(0,61,153,0.14)}
+
+.signup{margin-top:12px;color:var(--muted);font-size:0.95rem;text-align:center}
+.signup a{color:var(--blue-600);text-decoration:none}
+
+@media (max-width:480px){
+  .brand-link{left:12px}
+  .login-card{padding:20px}
+}

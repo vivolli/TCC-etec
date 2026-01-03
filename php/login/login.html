@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login — FETEL</title>
+    <link rel="stylesheet" href="../../css/login.css">
+    <meta name="robots" content="noindex">
+</head>
+<body>
+    <main class="login-page">
+        <a class="brand-link" href="../../index.html" aria-label="FETEL — Início">
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <rect x="2" y="2" width="20" height="20" rx="4" fill="#0056b3" />
+                <path d="M6 16V8h3l3 6V8h3v8h-3l-3-6v6H6z" fill="#fff" />
+            </svg>
+            <span class="brand">FETEL</span>
+        </a>
+
+        <section class="login-card" aria-labelledby="loginTitle">
+            <h1 id="loginTitle">Entrar na sua conta</h1>
+            <p class="lead">Acesse suas turmas, materiais e informações acadêmicas.</p>
+
+            <form class="login-form" method="post" action="login.php" novalidate>
+                <label for="email">E-mail</label>
+                <input type="email" name="email" id="email" required autocomplete="username" placeholder="seu@exemplo.com">
+
+                <label for="senha">Senha</label>
+                <div class="password-field">
+                    <input type="password" name="senha" id="senha" required autocomplete="current-password" placeholder="••••••••">
+                </div>
+
+                <div class="form-row">
+                    <label class="checkbox">
+                        <input type="checkbox" name="lembrar-de-mim" id="lembrar-de-mim"> <span>Lembrar-me</span>
+                    </label>
+                    <a class="forgot" href="esqueceuSenha.php">Esqueceu a senha?</a>
+                </div>
+
+                <button type="submit" name="btnLogar" class="btn primary">Entrar</button>
+            </form>
+
+        </section>
+    </main>
+
+        <!-- codigo js/node js etc -->
+</body>
+</html>
