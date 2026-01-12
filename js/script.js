@@ -1,5 +1,3 @@
-// script.js — comportamento básico da página
-
 document.addEventListener('DOMContentLoaded', function(){
   const nav = document.getElementById('main-nav');
   const toggle = document.querySelector('.nav-toggle');
@@ -21,7 +19,6 @@ document.addEventListener('DOMContentLoaded', function(){
       } else if(href === '#' || href === ''){
         return;
       }
-      // close mobile nav if open
       if(nav.classList.contains('open')){
         nav.classList.remove('open');
         toggle.setAttribute('aria-expanded','false');

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login — FETEL</title>
+    <title>Login — Alunos — FETEL</title>
     <link rel="stylesheet" href="/TCC-etec/css/login.css">
     <link rel="stylesheet" href="/TCC-etec/css/login-perfis.css">
     <meta name="robots" content="noindex">
@@ -16,6 +16,22 @@
         </a>
 
         <section class="login-card" aria-labelledby="loginTitle">
+            <header class="login-header">
+                <div class="login-avatar">
+                    <a href="/TCC-etec/php/login/alunos/login.html" aria-label="Voltar ao login do aluno">
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                            <circle cx="12" cy="8" r="3" stroke="currentColor" stroke-width="1.5"/>
+                            <path d="M4 20c0-4 4-6 8-6s8 2 8 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </a>
+                </div>
+
+                <nav class="profile-switch" role="tablist" aria-label="Alternar perfil">
+                    <a href="/TCC-etec/php/login/alunos/login.html" class="active perfil-aluno" role="tab" aria-selected="true">Aluno</a>
+                    <a href="/TCC-etec/php/login/adms/login.html" class="inactive perfil-professor" role="tab" aria-selected="false">Professor</a>
+                </nav>
+            </header>
+
             <h1 id="loginTitle">Entrar na sua conta</h1>
             <p class="lead">Acesse suas turmas, materiais e informações acadêmicas.</p>
 
@@ -41,14 +57,12 @@
                     <a class="forgot" href="esqueceuSenha.php">Esqueceu a senha?</a>
                 </div>
 
-                <button type="submit" name="btnLogar" class="btn primary">Entrar</button>
+                <button type="submit" name="btnLogar" class="btn primary btn-block" aria-label="Entrar na conta">Entrar</button>
             </form>
-
-            
 
         </section>
     </main>
 
-    <script>window.location.replace('/TCC-etec/php/login/alunos/login.html');</script>
+    <script src="/TCC-etec/js/entrar.js" defer></script>
 </body>
 </html>

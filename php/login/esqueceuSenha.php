@@ -9,6 +9,8 @@ if (file_exists(__DIR__ . '/phpmailer/vendor/autoload.php')) {
     require_once __DIR__ . '/phpmailer/vendor/autoload.php';
 }
 
+require_once __DIR__ . '/../../db/conexao.php';
+
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/../../');
 $dotenv->safeLoad();
 
@@ -23,6 +25,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = 'Por favor informe um e-mail válido.';
     } else {
         try {
+            $pdo = null;
+            try {
+                $pdo = getPDO();
+            } catch (Throwable $ex) {
+                $pdo = null;
+            }
             $mail = new PHPMailer(true);
             $mail->CharSet    = 'UTF-8';
             $mail->isSMTP();
@@ -38,38 +46,88 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
             }
 
-            //Recipients
             $fromEmail = $_ENV['EMAIL_USER'] ?? $mail->Username;
             $fromName = $_ENV['EMAIL_FROM_NAME'] ?? 'FETEL';
             $mail->setFrom($fromEmail, $fromName);
             $mail->addAddress($email, 'Usuário(a)');
             $mail->addReplyTo($fromEmail, $fromName);
 
-             $mail->isHTML(true);
+            $mail->isHTML(true);
             $mail->Subject = 'Recuperação de senha — FETEL';
 
             $imageAttachment = __DIR__ . '/../../img/fetel.png';
             $embeddedHtml = '';
             if (file_exists($imageAttachment)) {
-                // 'banner1' is the CID referenced in the HTML body
                 $mail->addEmbeddedImage($imageAttachment, 'banner1', 'fetel.png');
-                // place image at the end and limit size to ~300px
-                $embeddedHtml = "<div style='text-align:center;margin-top:18px'><img src='cid:banner1' alt='FETEL' style='width:100%;max-width:300px;height:auto;border-radius:8px;display:block;margin:0 auto'></div>";
+                $embeddedHtml = "<div style='text-align:center;margin-top:18px'><img src='cid:banner1' alt='FETEL' style='width:100%;max-width:520px;height:auto;border-radius:8px;display:block;margin:0 auto'></div>";
             }
 
-                $mailBodyHtml = <<<HTML
+            $resetLinkHtml = '';
+            if ($pdo) {
+                $stmt = $pdo->prepare('SELECT id FROM usuarios WHERE email = ? LIMIT 1');
+                $stmt->execute([$email]);
+                $u = $stmt->fetch();
+                $usuarioId = $u ? (int)$u['id'] : null;
+
+                $token = bin2hex(random_bytes(16));
+                $tokenHash = hash('sha256', $token);
+                $expires = (new DateTime('+1 hour'))->format('Y-m-d H:i:s');
+
+                try {
+                    $colStmt = $pdo->query("SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'redefinicoes_senha'");
+                    $cols = $colStmt->fetchAll(PDO::FETCH_COLUMN);
+                } catch (Throwable $colEx) {
+                    $cols = [];
+                }
+
+                $insertCols = [];
+                $insertValues = [];
+                if (in_array('usuario_id', $cols)) {
+                    $insertCols[] = 'usuario_id';
+                    $insertValues[] = $usuarioId;
+                }
+                if (in_array('email', $cols)) {
+                    $insertCols[] = 'email';
+                    $insertValues[] = $email;
+                }
+                if (in_array('token_hash', $cols)) {
+                    $insertCols[] = 'token_hash';
+                    $insertValues[] = $tokenHash;
+                }
+                if (in_array('expires_at', $cols)) {
+                    $insertCols[] = 'expires_at';
+                    $insertValues[] = $expires;
+                }
+
+                if (!empty($insertCols)) {
+                    $placeholders = implode(',', array_fill(0, count($insertCols), '?'));
+                    $sql = 'INSERT INTO redefinicoes_senha (' . implode(',', $insertCols) . ') VALUES (' . $placeholders . ')';
+                    $ins = $pdo->prepare($sql);
+                    $ins->execute($insertValues);
+                } else {
+                }
+
+                $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+                $host = $_SERVER['HTTP_HOST'] ?? ($_SERVER['SERVER_NAME'] ?? '');
+                $resetUrl = $scheme . '://' . $host . '/TCC-etec/php/login/reset.php?token=' . urlencode($token);
+
+                $resetLinkHtml = "<p style='margin-top:18px'>Clique no link abaixo para redefinir sua senha. O link é válido por 1 hora:</p>";
+                $resetLinkHtml .= "<p style='margin-top:8px'><a href='" . htmlspecialchars($resetUrl, ENT_QUOTES, 'UTF-8') . "' target='_blank'>Redefinir minha senha</a></p>";
+            }
+
+            $mailBodyHtml = <<<HTML
                 <div style="font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Arial; color:#0f172a">
                     <h2>Olá,</h2>
                     <h3>Recebemos uma solicitação para redefinir sua senha. Se você solicitou a redefinição, siga as instruções enviadas neste e-mail.</h3>
+                    {$resetLinkHtml}
                     <p style="margin-top:18px">Atenciosamente,<br><strong>FETEL</strong></p>
                 </div>
                 HTML;
 
                 $mail->Body = $mailBodyHtml . $embeddedHtml;
-                $mail->AltBody = "Recebemos uma solicitação para redefinir sua senha. Se você solicitou a redefinição, siga as instruções enviadas neste e-mail.\n\nAtenciosamente, FETEL";
+                $mail->AltBody = "Recebemos uma solicitação para redefinir sua senha. Se você solicitou a redefinição, siga as instruções enviadas neste e-mail.\n\nSe você não solicitou, ignore esta mensagem.\n\nAtenciosamente, FETEL";
 
             $mail->send();
-            // Redirect after successful POST to avoid duplicate sends on reload (Post/Redirect/Get)
             $location = basename($_SERVER['PHP_SELF']);
             header('Location: ' . $location . '?sent=1');
             exit;
@@ -85,64 +143,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Recuperar senha — FETEL</title>
-    <link rel="stylesheet" href="../../css/login.css">
-    <style>
-        .toast {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 9999;
-            display: flex;
-            gap: 12px;
-            align-items: center;
-            padding: 14px 18px;
-            border-radius: 10px;
-            box-shadow: 0 8px 24px rgba(16,24,40,0.08);
-            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
-        }
-        .toast.success { background: #f0fdf4; border-left: 4px solid #16a34a; color: #064e3b; }
-        .toast.error { background: #fff1f2; border-left: 4px solid #dc2626; color: #7f1d1d; }
-        .toast .close { margin-left: 8px; background: transparent; border: none; color: inherit; cursor: pointer; font-weight:600 }
-        .toast.hide { opacity: 0; transform: translateY(-8px); transition: all .35s ease; }
-    </style>
+    <link rel="stylesheet" href="/TCC-etec/css/login.css">
+    <link rel="stylesheet" href="/TCC-etec/css/esqueceu_senha.css">
     <meta name="robots" content="noindex">
 </head>
 <body>
-    <script>
-        // Auto-hide toast after page load if present
-        document.addEventListener('DOMContentLoaded', function(){
-            const t = document.querySelector('.toast');
-            if(!t) return;
-            setTimeout(()=>{
-                t.classList.add('hide');
-                setTimeout(()=>t.remove(),400);
-            }, 4500);
-        });
-    </script>
+    <script src="/TCC-etec/js/esqueceu_senha.js" defer></script>
     <?php if ($sent): ?>
         <div class="toast success" role="status" aria-live="polite">
             <div>
                 <strong>Email de recuperacao enviado com sucesso</strong>
                 <div style="font-size:.95rem;margin-top:6px;color:rgba(0,0,0,0.7)">Verifique o e-mail informado para instruções.</div>
             </div>
-            <button class="close" aria-label="Fechar" onclick="this.closest('.toast').remove()">✕</button>
+            <button class="close" aria-label="Fechar">✕</button>
         </div>
-    <?php elseif ($error): ?>
+    <?php 
+    elseif ($error): ?>
         <div class="toast error" role="alert">
             <div>
                 <strong>Erro ao enviar e-mail</strong>
                 <div style="font-size:.95rem;margin-top:6px;color:rgba(0,0,0,0.7)"><?=htmlspecialchars($error)?></div>
             </div>
-            <button class="close" aria-label="Fechar" onclick="this.closest('.toast').remove()">✕</button>
+            <button class="close" aria-label="Fechar">✕</button>
         </div>
     <?php endif; ?>
     <main class="login-page">
-    <a class="brand-link" href="login.php" aria-label="Voltar ao login">
-            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                <rect x="2" y="2" width="20" height="20" rx="4" fill="#0056b3" />
-                <path d="M6 16V8h3l3 6V8h3v8h-3l-3-6v6H6z" fill="#fff" />
-            </svg>
-            <span class="brand">FETEL</span>
+        <a class="brand-link" href="/TCC-etec/index.html" aria-label="Voltar ao inicio">
+            <img src="/TCC-etec/img/fetel_sem_fundo.png" alt="FETEL" style="height:96px; width:auto; display:inline-block; vertical-align:middle;">
         </a>
 
         <section class="login-card" aria-labelledby="forgotTitle">
