@@ -1,5 +1,10 @@
 <?php
 // header.php - cabeçalho reutilizavel
+// Try to initialize app bootstrap (non-fatal)
+$bootstrap = __DIR__ . '/../app/Core/Bootstrap.php';
+if (file_exists($bootstrap)) {
+  @include_once $bootstrap;
+}
 ?>
 
 <link rel="stylesheet" href="/TCC/css/index.css">

@@ -44,4 +44,19 @@ document.addEventListener('DOMContentLoaded', function(){
 
   const yearEl = document.getElementById('year');
   if(yearEl) yearEl.textContent = new Date().getFullYear();
+
+  // card action buttons: redirect on click or keyboard activation
+  document.querySelectorAll('.card-button').forEach(btn => {
+    btn.addEventListener('click', function(e){
+      const href = this.getAttribute('data-href');
+      if(href) window.location.href = href;
+    });
+    btn.addEventListener('keydown', function(e){
+      if(e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        const href = this.getAttribute('data-href');
+        if(href) window.location.href = href;
+      }
+    });
+  });
 });

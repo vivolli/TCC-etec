@@ -256,6 +256,21 @@ body{
   display: flex;
   flex-direction: column;
   gap: 8px;
+  text-decoration: none;
+  color: inherit;
+}
+
+/* full-bleed invisible button overlay for clickable card (keeps visual look) */
+.card { position: relative; }
+.card-button {
+  width: 100%;
+  display: inline-block;
+  text-align: center;
+}
+.card-button:focus {
+  outline: 3px solid rgba(0,86,179,0.16);
+  outline-offset: 4px;
+  border-radius: 8px;
 }
 
 .card .icon {

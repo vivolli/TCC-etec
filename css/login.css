@@ -100,17 +100,20 @@ body{
 .login-card .login-form{ text-align:left }
 .login-form input[type="email"], .login-form input[type="password"], .login-form input[type="text"]{
   width:100%;
-  padding:12px 14px;
-  border-radius:10px;
-  border:1px solid rgba(16, 39, 88, 0.06);
-  font-size:0.98rem;
+  padding:16px 18px;
+  border-radius:14px;
+  border:1px solid rgba(16, 39, 88, 0.08);
+  font-size:1.02rem;
   background: linear-gradient(180deg, rgba(255,255,255,0.6), rgba(250,252,255,0.6));
   transition: box-shadow .12s ease, border-color .12s ease, transform .08s ease;
+  min-height:48px;
 }
 
 .login-form .field-row{ display:flex; align-items:center; gap:12px; margin:8px 0; width:100%; justify-content:flex-start }
 .login-form .field-row label{ display:inline-block; margin:0; text-align:left; color:#254060; font-weight:700; flex:0 0 120px }
 .login-form .field-row input[type="email"], .login-form .field-row input[type="password"], .login-form .field-row .password-field{ flex:1; min-width:0 }
+.login-form .field-row input[type="email"] , .login-form .field-row input[type="password"]{ padding:16px 18px; }
+.password-field input{ padding:16px 18px; border-radius:14px; min-height:48px }
 .login-form .field-row .password-field{ margin:0 }
 
 .login-card .login-form label,
