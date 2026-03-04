@@ -1,0 +1,97 @@
+@import url('noticias.css');
+
+
+.sidebar {
+  z-index: 10;
+}
+
+
+
+.main .card {
+  position: relative;
+  z-index: 30; 
+  max-width: 600px;
+  width: 100%;
+  margin: 24px auto;
+  padding: 24px;
+}
+
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  border: 2px solid #0056b3; 
+  border-radius: 10px;
+  padding: 24px;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-field label {
+  font-weight: 600;
+  color: var(--blue-600);
+  margin-bottom: 4px;
+}
+
+.form-field input,
+.form-field select,
+.form-field textarea {
+  padding: 10px 14px;
+  border: 1px solid #0056b3; 
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-family: inherit;
+  resize: vertical;
+  width: 100%;
+}
+
+.form-field select {
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D'10'%20height%3D'6'%20viewBox%3D'0%200%2010%206'%20xmlns%3D'http%3A//www.w3.org/2000/svg'%3E%3Cpath%20d%3D'M0%200l5%206%205-6z'%20fill%3D'%23333'%20/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+}
+
+.form-field input:focus,
+.form-field select:focus,
+.form-field textarea:focus {
+  outline: 2px solid rgba(0, 86, 179, 0.3);
+  outline-offset: 2px;
+}
+
+button[type=submit] {
+  align-self: flex-start;
+}
+
+.mensagem {
+  padding: 14px 18px;
+  border-radius: 8px;
+  background: #e6ffed;
+  border: 1px solid #a6f4c5;
+  color: #064c24;
+  font-weight: 500;
+}
+
+/* responsividade básica */
+@media (max-width: 768px) {
+  .sidebar {
+    position: relative;
+    width: 100%;
+    height: auto;
+    z-index: 10;
+  }
+
+  .main {
+    margin-left: 0;
+    padding: 16px;
+    position: relative;
+  }
+
+  .main .card {
+    padding: 16px;
+  }
+}
