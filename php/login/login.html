@@ -4,30 +4,34 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login — FETEL</title>
-    <link rel="stylesheet" href="../../css/login.css">
+    <link rel="stylesheet" href="/TCC-etec/css/login.css">
+    <link rel="stylesheet" href="/TCC-etec/css/login-perfis.css">
     <meta name="robots" content="noindex">
+    <meta http-equiv="Cache-Control" content="no-store">
 </head>
 <body>
     <main class="login-page">
-        <a class="brand-link" href="../../index.html" aria-label="FETEL — Início">
-            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                <rect x="2" y="2" width="20" height="20" rx="4" fill="#0056b3" />
-                <path d="M6 16V8h3l3 6V8h3v8h-3l-3-6v6H6z" fill="#fff" />
-            </svg>
-            <span class="brand">FETEL</span>
+        <a class="brand-link" href="/TCC-etec/index.html" aria-label="FETEL — Início">
+            <img src="/TCC-etec/img/fetel_sem_fundo.png" alt="FETEL" style="height:96px; width:auto; display:inline-block; vertical-align:middle;">
         </a>
 
         <section class="login-card" aria-labelledby="loginTitle">
             <h1 id="loginTitle">Entrar na sua conta</h1>
             <p class="lead">Acesse suas turmas, materiais e informações acadêmicas.</p>
 
-            <form class="login-form" method="post" action="login.php" novalidate>
-                <label for="email">E-mail</label>
-                <input type="email" name="email" id="email" required autocomplete="username" placeholder="seu@exemplo.com">
+            <div id="flash" role="status" aria-live="polite" style="display:none;margin-bottom:12px;padding:10px;border-radius:6px;"></div>
 
-                <label for="senha">Senha</label>
-                <div class="password-field">
-                    <input type="password" name="senha" id="senha" required autocomplete="current-password" placeholder="••••••••">
+            <form class="login-form" method="post" action="login.php" novalidate>
+                <div class="field-row">
+                    <label for="email" style="text-align:left;display:block">E-mail</label>
+                    <input type="email" name="email" id="email" required autocomplete="username" placeholder="seu@exemplo.com">
+                </div>
+
+                <div class="field-row">
+                    <label for="senha" style="text-align:left;display:block">Senha</label>
+                    <div class="password-field">
+                        <input type="password" name="senha" id="senha" required autocomplete="current-password" placeholder="••••••••">
+                    </div>
                 </div>
 
                 <div class="form-row">
@@ -40,9 +44,11 @@
                 <button type="submit" name="btnLogar" class="btn primary" >Entrar</button>
             </form>
 
+            
+
         </section>
     </main>
 
-        <!-- codigo js/node js etc -->
+    <script>window.location.replace('/TCC-etec/php/login/alunos/login.html');</script>
 </body>
 </html>

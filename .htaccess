@@ -1,0 +1,36 @@
+# reescreve rotas de acesso
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    # bloqueia caso tente acessar o .env
+    RewriteRule (^|/)\.env$ - [F,L,NC]
+    RewriteRule (^|/)composer\.json$ - [F,L,NC]
+    RewriteRule (^|/)composer\.lock$ - [F,L,NC]
+
+    RewriteRule ^vendor/ - [F,L,NC]
+
+    RewriteRule ^php/(auth|conexao)\.php$ - [F,L,NC]
+
+    RewriteCond %{REQUEST_URI} ^/TCC-etec/php/sou_aluno/ [NC]
+    RewriteCond %{REQUEST_URI} !^/TCC-etec/php/sou_aluno/index\.php$ [NC]
+    RewriteRule \.php$ - [F,L,NC]
+</IfModule>
+
+<IfModule mod_authz_core.c>
+    <Files ".env">
+        Require all denied
+    </Files>
+    <FilesMatch "^(composer\.json|composer\.lock)$">
+        Require all denied
+    </FilesMatch>
+</IfModule>
+<IfModule !mod_authz_core.c>
+    <Files ".env">
+        Deny from all
+    </Files>
+    <FilesMatch "^(composer\.json|composer\.lock)$">
+        Deny from all
+    </FilesMatch>
+</IfModule>
+
+Options -Indexes
+
