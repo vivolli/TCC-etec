@@ -27,7 +27,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         try {
             $pdo = null;
             try {
-                $pdo = getPDO();
+                // obter conexão via Database OOP
+                $pdo = Database::getInstance()->getConnection();
             } catch (Throwable $ex) {
                 $pdo = null;
             }
@@ -69,53 +70,57 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $u = $stmt->fetch();
                 $usuarioId = $u ? (int)$u['id'] : null;
 
-                $token = bin2hex(random_bytes(16));
-                $tokenHash = hash('sha256', $token);
-                $expires = (new DateTime('+1 hour'))->format('Y-m-d H:i:s');
-
-                try {
-                    $colStmt = $pdo->query("SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'redefinicoes_senha'");
-                    $cols = $colStmt->fetchAll(PDO::FETCH_COLUMN);
-                } catch (Throwable $colEx) {
-                    $cols = [];
-                }
-
-                $insertCols = [];
-                $insertValues = [];
-                if (in_array('usuario_id', $cols)) {
-                    $insertCols[] = 'usuario_id';
-                    $insertValues[] = $usuarioId;
-                }
-                if (in_array('email', $cols)) {
-                    $insertCols[] = 'email';
-                    $insertValues[] = $email;
-                }
-                if (in_array('token_hash', $cols)) {
-                    $insertCols[] = 'token_hash';
-                    $insertValues[] = $tokenHash;
-                }
-                if (in_array('expires_at', $cols)) {
-                    $insertCols[] = 'expires_at';
-                    $insertValues[] = $expires;
-                }
-
-                if (!empty($insertCols)) {
-                    $placeholders = implode(',', array_fill(0, count($insertCols), '?'));
-                    $sql = 'INSERT INTO redefinicoes_senha (' . implode(',', $insertCols) . ') VALUES (' . $placeholders . ')';
-                    $ins = $pdo->prepare($sql);
-                    $ins->execute($insertValues);
+                if (!$u) {
+                    $error = 'O e-mail informado não foi cadastrado.';
                 } else {
+                    $token = bin2hex(random_bytes(16));
+                    $tokenHash = hash('sha256', $token);
+                    $expires = (new DateTime('+1 hour'))->format('Y-m-d H:i:s');
+
+                    try {
+                        $colStmt = $pdo->query("SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'redefinicoes_senha'");
+                        $cols = $colStmt->fetchAll(PDO::FETCH_COLUMN);
+                    } catch (Throwable $colEx) {
+                        $cols = [];
+                    }
+
+                    $insertCols = [];
+                    $insertValues = [];
+                    if (in_array('usuario_id', $cols) && $usuarioId !== null) {
+                        $insertCols[] = 'usuario_id';
+                        $insertValues[] = $usuarioId;
+                    }
+                    if (in_array('email', $cols)) {
+                        $insertCols[] = 'email';
+                        $insertValues[] = $email;
+                    }
+                    if (in_array('token_hash', $cols)) {
+                        $insertCols[] = 'token_hash';
+                        $insertValues[] = $tokenHash;
+                    }
+                    if (in_array('expires_at', $cols)) {
+                        $insertCols[] = 'expires_at';
+                        $insertValues[] = $expires;
+                    }
+
+                    if (!empty($insertCols)) {
+                        $placeholders = implode(',', array_fill(0, count($insertCols), '?'));
+                        $sql = 'INSERT INTO redefinicoes_senha (' . implode(',', $insertCols) . ') VALUES (' . $placeholders . ')';
+                        $ins = $pdo->prepare($sql);
+                        $ins->execute($insertValues);
+                    }
+
+                    $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+                    $host = $_SERVER['HTTP_HOST'] ?? ($_SERVER['SERVER_NAME'] ?? '');
+                    $resetUrl = $scheme . '://' . $host . '/TCC-etec/php/login/reset.php?token=' . urlencode($token);
+
+                    $resetLinkHtml = "<p style='margin-top:18px'>Clique no link abaixo para redefinir sua senha. O link é válido por 1 hora:</p>";
+                    $resetLinkHtml .= "<p style='margin-top:8px'><a href='" . htmlspecialchars($resetUrl, ENT_QUOTES, 'UTF-8') . "' target='_blank'>Redefinir minha senha</a></p>";
                 }
-
-                $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
-                $host = $_SERVER['HTTP_HOST'] ?? ($_SERVER['SERVER_NAME'] ?? '');
-                $resetUrl = $scheme . '://' . $host . '/TCC-etec/php/login/reset.php?token=' . urlencode($token);
-
-                $resetLinkHtml = "<p style='margin-top:18px'>Clique no link abaixo para redefinir sua senha. O link é válido por 1 hora:</p>";
-                $resetLinkHtml .= "<p style='margin-top:8px'><a href='" . htmlspecialchars($resetUrl, ENT_QUOTES, 'UTF-8') . "' target='_blank'>Redefinir minha senha</a></p>";
             }
 
-            $mailBodyHtml = <<<HTML
+            if (!empty($u)) {
+                $mailBodyHtml = <<<HTML
                 <div style="font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Arial; color:#0f172a">
                     <h2>Olá,</h2>
                     <h3>Recebemos uma solicitação para redefinir sua senha. Se você solicitou a redefinição, siga as instruções enviadas neste e-mail.</h3>
@@ -127,10 +132,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $mail->Body = $mailBodyHtml . $embeddedHtml;
                 $mail->AltBody = "Recebemos uma solicitação para redefinir sua senha. Se você solicitou a redefinição, siga as instruções enviadas neste e-mail.\n\nSe você não solicitou, ignore esta mensagem.\n\nAtenciosamente, FETEL";
 
-            $mail->send();
-            $location = basename($_SERVER['PHP_SELF']);
-            header('Location: ' . $location . '?sent=1');
-            exit;
+                $mail->send();
+                $location = basename($_SERVER['PHP_SELF']);
+                header('Location: ' . $location . '?sent=1');
+                exit;
+            }
         } catch (Exception $e) {
             $error = 'Não foi possível enviar o e-mail. Erro: ' . $mail->ErrorInfo;
         }

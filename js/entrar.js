@@ -20,7 +20,7 @@
         let redirectTo = '/TCC-etec/php/sou_aluno/index.php';
         if (path.indexOf('/php/login/adms/') !== -1) {
             checkUrl = '/TCC-etec/php/login/adms/checar_sessao.php';
-            redirectTo = '/TCC-etec/php/secretaria/secretaria.php';
+            redirectTo = '/TCC-etec/php/login/adms/logado/index.php';
         }
 
         fetch(checkUrl, {cache: 'no-store'})

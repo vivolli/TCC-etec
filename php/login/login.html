@@ -49,6 +49,29 @@
         </section>
     </main>
 
-    <script>window.location.replace('/TCC-etec/php/login/alunos/login.html');</script>
+    <script>
+    (function(){
+        function redirectTo(url){ window.location.replace(url); }
+
+        Promise.any([
+            fetch('/TCC-etec/php/login/adms/checar_sessao.php', {cache:'no-store'}).then(r=>r.json()).then(j=>({type:'adms', ok:!!j.logado})),
+            fetch('/TCC-etec/php/login/alunos/checar_sessao.php', {cache:'no-store'}).then(r=>r.json()).then(j=>({type:'alunos', ok:!!j.logado}))
+        ]).then(results=>{
+        }).catch(()=>{}).finally(()=>{
+            Promise.allSettled([
+                fetch('/TCC-etec/php/login/adms/checar_sessao.php', {cache:'no-store'}).then(r=>r.json()).catch(()=>({logado:false})),
+                fetch('/TCC-etec/php/login/alunos/checar_sessao.php', {cache:'no-store'}).then(r=>r.json()).catch(()=>({logado:false}))
+            ]).then(results=>{
+                try{
+                    const adm = results[0].status === 'fulfilled' && results[0].value && results[0].value.logado;
+                    const aluno = results[1].status === 'fulfilled' && results[1].value && results[1].value.logado;
+                    if (adm) return redirectTo('/TCC-etec/php/login/adms/logado/index.php');
+                    if (aluno) return redirectTo('/TCC-etec/php/sou_aluno/index.php');
+                }catch(e){ }
+                redirectTo('/TCC-etec/php/login/alunos/login.html');
+            });
+        });
+    })();
+    </script>
 </body>
 </html>

@@ -42,7 +42,7 @@ if (!function_exists('requer_autenticacao')) {
         iniciar_sessao_segura();
         if (empty($_SESSION['usuario_id'])) {
             $request = $_SERVER['REQUEST_URI'] ?? '/';
-            $login = '/TCC-etec/php/login/login.html';
+            $login = '/TCC-etec/php/login/entrar.php';
             header('Location: ' . $login . '?redirect=' . urlencode($request));
             exit;
         }
