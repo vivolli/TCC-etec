@@ -1,5 +1,10 @@
 <?php
 // canonical copy of php/sou_aluno/index.php
+// se o arquivo for acessado diretamente via URL, redireciona para o index comum do site
+if (isset($_SERVER['SCRIPT_FILENAME']) && realpath(__FILE__) === realpath($_SERVER['SCRIPT_FILENAME'])) {
+    header('Location: /TCC-etec/');
+    exit;
+}
 require_once __DIR__ . '/../../autenticacao.php';
 require_once __DIR__ . '/../../login/_sessao.php';
 requer_autenticacao();
@@ -21,13 +26,13 @@ $usuario_nome = trim((string)($sess['nome'] ?? '')) ?: 'Aluno';
 <body>
         <header class="site-header">
         <div class="container header-inner">
-                <a class="logo" href="/TCC-etec/app/public/index.html">
+                <a class="logo" href="/TCC-etec/">
                     <img src="/TCC-etec/app/public/img/fetel_sem_fundo.png" alt="FETEL" class="logo-img" style="height:96px;width:auto;display:inline-block;vertical-align:middle;">
                 </a>
             <nav class="nav" aria-label="Principal">
                 <ul class="nav-list">
-                    <li><a href="/TCC-etec/app/public/index.html">Início</a></li>
-                    <li><a class="active-link" href="/TCC-etec/app/php/sou_aluno/index.php">Sou aluno</a></li>
+                    <li><a href="/TCC-etec/">Início</a></li>
+                    <li><a class="active-link" href="/TCC-etec/">Sou aluno</a></li>
                     <li><a href="/TCC-etec/app/php/secretaria/secretaria.php">Secretaria</a></li>
                     <li class="nav-logout"><a href="/TCC-etec/app/php/sair.php">Sair</a></li>
                     <li class="nav-divider" aria-hidden="true"></li>
