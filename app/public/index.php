@@ -17,10 +17,7 @@ if (esta_logado()) {
         header('Location: /TCC-etec/app/php/secretaria/secretaria.php');
         exit;
     }
-    if (in_array($papel, $alunoRoles, true)) {
-        header('Location: /TCC-etec/app/php/sou_aluno/index.php');
-        exit;
-    }
+    // Não redirecionar automaticamente usuários 'aluno' para área separada
 }
 
 $path = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH);

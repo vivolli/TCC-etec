@@ -22,7 +22,7 @@ if (esta_logado()) {
         redirecionar('/TCC-etec/app/php/secretaria/secretaria.php');
     }
     if (in_array($papel, $alunoRoles, true)) {
-        redirecionar('/TCC-etec/app/php/sou_aluno/index.php');
+        redirecionar('/TCC-etec/');
     }
 }
 

@@ -37,7 +37,7 @@ class AuthController
             if ($redirect && strpos($redirect, '/') === 0 && strpos($redirect, '//') !== 0) {
                 header('Location: ' . $redirect);
             } else {
-                header('Location: /TCC-etec/app/php/sou_aluno/index.php');
+                header('Location: /TCC-etec/');
             }
             exit;
         }
@@ -61,7 +61,7 @@ class AuthController
             if ($redirect && strpos($redirect, '/') === 0 && strpos($redirect, '//') !== 0) {
                 header('Location: ' . $redirect);
             } else {
-                header('Location: /TCC-etec/app/php/sou_aluno/index.php');
+                header('Location: /TCC-etec/');
             }
             exit;
         }
