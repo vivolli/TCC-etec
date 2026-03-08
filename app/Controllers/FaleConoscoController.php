@@ -12,6 +12,16 @@ class FaleConoscoController {
         $resultado = "";
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            // CSRF validation
+            require_once __DIR__ . '/../Core/Csrf.php';
+            $token = $_POST['_csrf'] ?? null;
+            if (!\App\Core\Csrf::validateToken($token)) {
+                http_response_code(400);
+                $resultado = 'Requisição inválida (CSRF).';
+                include __DIR__ . '/../Views/FaleConosco/faleConosco.php';
+                return;
+            }
+
             $tipo = $_POST['tipo'] ?? '';
             $nome = $_POST['nome'] ?? '';
             $email = $_POST['email'] ?? '';

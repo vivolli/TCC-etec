@@ -1,7 +1,4 @@
 <?php
-// Front controller copy moved into app/public.
-// This entrypoint redirects logged-in users to area-specific pages.
-
 require_once __DIR__ . '/../php/autenticacao.php';
 
 iniciar_sessao_segura();
@@ -26,10 +23,8 @@ if (esta_logado()) {
     }
 }
 
-// Route specific front-end areas to Views inside app/Views to centralize frontend
 $path = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH);
 
-// Noticias routes: dispatch to NoticiasController if present
 if (preg_match('#/Noticias/([^/]+)(?:\.html)?$#i', $path, $m)) {
     $name = $m[1];
     $ctrl = __DIR__ . '/../Controllers/NoticiasController.php';
@@ -40,7 +35,6 @@ if (preg_match('#/Noticias/([^/]+)(?:\.html)?$#i', $path, $m)) {
     }
 }
 
-// FaleConosco (single page) matching -> dispatch to controller
 if (stripos($path, '/FaleConosco') !== false) {
     $ctrl = __DIR__ . '/../Controllers/FaleConoscoController.php';
     if (file_exists($ctrl)) {
@@ -50,7 +44,6 @@ if (stripos($path, '/FaleConosco') !== false) {
     }
 }
 
-// default: serve the public index
 readfile(__DIR__ . '/index.html');
 
 

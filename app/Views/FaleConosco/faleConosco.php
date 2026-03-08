@@ -88,7 +88,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
         <?php endif; ?>
 
+        <?php
+        // generate CSRF token
+        require_once __DIR__ . '/../../Core/Csrf.php';
+        $csrf = \App\Core\Csrf::generateToken();
+        ?>
+
         <form method="POST">
+            <input type="hidden" name="_csrf" value="<?php echo htmlspecialchars($csrf, ENT_QUOTES); ?>">
 
             <div class="form-field">
                 <label for="nome">Nome:</label>
