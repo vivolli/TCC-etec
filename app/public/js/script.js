@@ -1,0 +1,64 @@
+document.addEventListener('DOMContentLoaded', function(){
+  const nav = document.getElementById('main-nav');
+  const toggle = document.querySelector('.nav-toggle');
+  if(toggle) {
+    toggle.addEventListener('click', function(){
+      const open = nav && nav.classList.toggle('open');
+      toggle.setAttribute('aria-expanded', String(Boolean(open)));
+    });
+  }
+
+  document.querySelectorAll('a[href^="#"]').forEach(link => {
+    link.addEventListener('click', function(e){
+      const href = this.getAttribute('href');
+      const targetId = href.substring(1);
+      const target = document.getElementById(targetId);
+      e.preventDefault();
+      if(target){
+        const yOffset = 68;
+        const y = target.getBoundingClientRect().top + window.pageYOffset - yOffset;
+        window.scrollTo({top: y, behavior: 'smooth'});
+      } else if(href === '#' || href === ''){
+        return;
+      }
+      if(nav && nav.classList.contains('open')){
+        nav.classList.remove('open');
+        if(toggle) toggle.setAttribute('aria-expanded','false');
+      }
+    })
+  });
+
+  const sections = Array.from(document.querySelectorAll('main section[id]'));
+  const navLinks = Array.from(document.querySelectorAll('.nav-list a'));
+
+  function onScroll(){
+    const scrollPos = window.scrollY + 80;
+    if(sections.length === 0) return;
+    let current = sections[0];
+    for(const sec of sections){
+      if(sec.offsetTop <= scrollPos) current = sec;
+    }
+    navLinks.forEach(a => a.classList.toggle('active-link', a.getAttribute('href') === `#${current.id}`));
+  }
+
+  window.addEventListener('scroll', onScroll);
+  onScroll();
+
+  const yearEl = document.getElementById('year');
+  if(yearEl) yearEl.textContent = new Date().getFullYear();
+
+  // card action buttons: redirect on click or keyboard activation
+  document.querySelectorAll('.card-button').forEach(btn => {
+    btn.addEventListener('click', function(e){
+      const href = this.getAttribute('data-href');
+      if(href) window.location.href = href;
+    });
+    btn.addEventListener('keydown', function(e){
+      if(e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        const href = this.getAttribute('data-href');
+        if(href) window.location.href = href;
+      }
+    });
+  });
+});

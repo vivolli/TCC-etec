@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login — FETEL</title>
+    <link rel="stylesheet" href="/TCC-etec/app/public/css/index.css">
+    <link rel="stylesheet" href="/TCC-etec/app/public/css/index.css">
+    <meta name="robots" content="noindex">
+    <meta http-equiv="Cache-Control" content="no-store">
+</head>
+<body>
+    <main class="login-page">
+    <a class="brand-link" href="/TCC-etec/app/public/index.html" aria-label="FETEL — Início">
+            <img src="/TCC-etec/app/public/img/fetel_sem_fundo.png" alt="FETEL" style="height:96px; width:auto; display:inline-block; vertical-align:middle;">
+        </a>
+
+        <section class="login-card" aria-labelledby="loginTitle">
+            <h1 id="loginTitle">Entrar na sua conta</h1>
+            <p class="lead">Acesse suas turmas, materiais e informações acadêmicas.</p>
+
+            <div id="flash" role="status" aria-live="polite" style="display:none;margin-bottom:12px;padding:10px;border-radius:6px;"></div>
+
+            <form class="login-form" method="post" action="login.php" novalidate>
+                <div class="field-row">
+                    <label for="email" style="text-align:left;display:block">E-mail</label>
+                    <input type="email" name="email" id="email" required autocomplete="username" placeholder="seu@exemplo.com">
+                </div>
+
+                <div class="field-row">
+                    <label for="senha" style="text-align:left;display:block">Senha</label>
+                    <div class="password-field">
+                        <input type="password" name="senha" id="senha" required autocomplete="current-password" placeholder="••••••••">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <label class="checkbox">
+                        <input type="checkbox" name="lembrar-de-mim" id="lembrar-de-mim"> <span>Lembrar-me</span>
+                    </label>
+                    <a class="forgot" href="esqueceuSenha.php">Esqueceu a senha?</a>
+                </div>
+
+                <button type="submit" name="btnLogar" class="btn primary" >Entrar</button>
+            </form>
+
+        </section>
+    </main>
+
+    <script>
+    (function(){
+        function redirectTo(url){ window.location.replace(url); }
+
+        Promise.any([
+            fetch('/TCC-etec/app/php/login/adms/checar_sessao.php', {cache:'no-store'}).then(r=>r.json()).then(j=>({type:'adms', ok:!!j.logado})),
+            fetch('/TCC-etec/app/php/login/alunos/checar_sessao.php', {cache:'no-store'}).then(r=>r.json()).then(j=>({type:'alunos', ok:!!j.logado}))
+        ]).then(results=>{
+        }).catch(()=>{}).finally(()=>{
+            Promise.allSettled([
+                fetch('/TCC-etec/app/php/login/adms/checar_sessao.php', {cache:'no-store'}).then(r=>r.json()).catch(()=>({logado:false})),
+                fetch('/TCC-etec/app/php/login/alunos/checar_sessao.php', {cache:'no-store'}).then(r=>r.json()).catch(()=>({logado:false}))
+            ]).then(results=>{
+                try{
+                    const adm = results[0].status === 'fulfilled' && results[0].value && results[0].value.logado;
+                    const aluno = results[1].status === 'fulfilled' && results[1].value && results[1].value.logado;
+                    if (adm) return redirectTo('/TCC-etec/app/php/login/adms/logado/index.php');
+                    if (aluno) return redirectTo('/TCC-etec/app/php/sou_aluno/index.php');
+                }catch(e){ }
+                redirectTo('/TCC-etec/app/php/login/alunos/login.html');
+            });
+        });
+    })();
+    </script>
+</body>
+</html>
+
+
