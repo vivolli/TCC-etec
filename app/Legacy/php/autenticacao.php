@@ -1,6 +1,6 @@
 <?php
 // Delegate session responsibilities to App\Core\SessionManager while keeping function names
-require_once __DIR__ . '/../../app/Core/Bootstrap.php';
+require_once __DIR__ . '/../../Core/Bootstrap.php';
 use App\Core\SessionManager;
 
 if (!function_exists('iniciar_sessao_segura')) {
