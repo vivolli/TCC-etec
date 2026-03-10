@@ -1,0 +1,9 @@
+<?php
+require_once __DIR__ . '/ClasseAbstrata.php';
+class Duvida extends FaleConosco {
+
+public function processar() {
+    return "Dúvida processada: " . $this->getMensagem() . " (Enviada por: " . $this->getNome() . ", Email: " . $this->getEmail() . ")<br/>
+    Entraremos em contato em breve para esclarecer sua dúvida.";
+}
+}

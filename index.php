@@ -17,10 +17,8 @@ if (esta_logado()) {
         header('Location: /TCC-etec/php/secretaria/secretaria.php');
         exit;
     }
-    if (in_array($papel, $alunoRoles, true)) {
-        header('Location: /TCC-etec/php/sou_aluno/index.php');
-        exit;
-    }
+    // Não redirecionar automaticamente usuários 'aluno' para uma página separada;
+    // permitir que o índice comum do site seja exibido para todos os perfis.
 }
 
 readfile(__DIR__ . '/index.html');

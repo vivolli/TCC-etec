@@ -21,7 +21,6 @@ if (class_exists('\Dotenv\Dotenv')) {
     }
 }
 if (class_exists('\PDO')) {
-    // Database class (OOP wrapper) defined inside this file to keep a single-file config
     class Database
     {
         private static ?Database $instance = null;
@@ -104,4 +103,5 @@ if (class_exists('\PDO')) {
         return Database::getInstance()->query($sql, $params);
     }
 }
+
 
