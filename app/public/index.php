@@ -41,6 +41,27 @@ if (stripos($path, '/FaleConosco') !== false) {
     }
 }
 
-readfile(__DIR__ . '/index.html');
+// read the static index.html and inject dynamic asset tags from our manifest-aware partial
+$indexHtmlPath = __DIR__ . '/index.html';
+if (file_exists($indexHtmlPath)) {
+    $html = file_get_contents($indexHtmlPath);
+    // capture assets partial output
+    ob_start();
+    $assetsPartial = __DIR__ . '/../Views/partials/assets.php';
+    if (file_exists($assetsPartial)) {
+        include $assetsPartial;
+    }
+    $assetsHtml = ob_get_clean();
+
+    // insert assets just before </head>
+    if (stripos($html, '</head>') !== false) {
+        $html = str_ireplace('</head>', $assetsHtml . "\n</head>", $html);
+    } else {
+        // fallback: append at start of body
+        $html = $assetsHtml . $html;
+    }
+
+    echo $html;
+}
 
 

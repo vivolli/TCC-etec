@@ -10,7 +10,7 @@ $nome = htmlspecialchars($info['nome'] ?? 'Aluno');
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <title>Biblioteca — FETEL</title>
-    <link rel="stylesheet" href="/TCC-etec/css/index.css">
+    <link rel="stylesheet" href="/TCC-etec/app/public/css/index.css">
 </head>
 <body>
 <?php require_once __DIR__ . '/../header.php'; ?>

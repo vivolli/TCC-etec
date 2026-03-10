@@ -1,30 +1,25 @@
 <?php
-// Delegate session responsibilities to App\Core\SessionManager while keeping function names
-require_once __DIR__ . '/../../Core/Bootstrap.php';
-use App\Core\SessionManager;
+// Minimal procedural authentication shim.
+// Legacy copies were removed in favor of the canonical app/php implementation.
+// Provide a safe, self-contained procedural fallback so older templates keep working.
 
 if (!function_exists('iniciar_sessao_segura')) {
     function iniciar_sessao_segura(): void
     {
-        $sm = SessionManager::getInstance();
-        $sm->start();
+        if (session_status() === PHP_SESSION_NONE) session_start();
     }
 }
-
 if (!function_exists('esta_logado')) {
     function esta_logado(): bool
     {
-        $sm = SessionManager::getInstance();
-        $info = $sm->getSessionInfo();
-        return !empty($info['logado']);
+        iniciar_sessao_segura();
+        return !empty($_SESSION['usuario_id']);
     }
 }
-
 if (!function_exists('requer_autenticacao')) {
     function requer_autenticacao(): void
     {
-        $sm = SessionManager::getInstance();
-        $sm->start();
+        iniciar_sessao_segura();
         if (empty($_SESSION['usuario_id'])) {
             $request = $_SERVER['REQUEST_URI'] ?? '/';
             $login = '/TCC-etec/app/php/login/entrar.php';
@@ -33,15 +28,22 @@ if (!function_exists('requer_autenticacao')) {
         }
     }
 }
-
 if (!function_exists('encerrar_sessao')) {
     function encerrar_sessao(): void
     {
-        $sm = SessionManager::getInstance();
-        $sm->destroy();
+        iniciar_sessao_segura();
+        $_SESSION = [];
+        if (ini_get('session.use_cookies')) {
+            $params = session_get_cookie_params();
+            setcookie(session_name(), '', time() - 42000,
+                $params['path'] ?? '/',
+                $params['domain'] ?? '',
+                $params['secure'] ?? false,
+                $params['httponly'] ?? true
+            );
+        }
+        session_destroy();
     }
 }
-
-?>
 
 

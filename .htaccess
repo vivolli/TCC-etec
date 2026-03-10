@@ -1,10 +1,8 @@
 # reescreve rotas de acesso
 <IfModule mod_rewrite.c>
     RewriteEngine On
-    # Route all requests to app/public while preserving direct access when already inside that folder
     RewriteCond %{REQUEST_URI} !^/TCC-etec/app/public/ [NC]
     RewriteRule ^(.*)$ /TCC-etec/app/public/$1 [L]
-    # bloqueia caso tente acessar o .env
     RewriteRule (^|/)\.env$ - [F,L,NC]
     RewriteRule (^|/)composer\.json$ - [F,L,NC]
     RewriteRule (^|/)composer\.lock$ - [F,L,NC]
@@ -13,9 +11,6 @@
 
     RewriteRule ^php/(auth|conexao)\.php$ - [F,L,NC]
 
-    RewriteCond %{REQUEST_URI} ^/TCC-etec/app/php/sou_aluno/ [NC]
-    RewriteCond %{REQUEST_URI} !^/TCC-etec/app/php/sou_aluno/index\.php$ [NC]
-    RewriteRule \.php$ - [F,L,NC]
 </IfModule>
 
 <IfModule mod_authz_core.c>

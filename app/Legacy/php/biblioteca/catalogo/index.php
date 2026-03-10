@@ -1,11 +1,12 @@
 <?php
-require_once __DIR__ . '/../../biblioteca/_acesso.php';
+// canonical copy of php/biblioteca/catalogo/index.php
+require_once __DIR__ . '/../../_acesso.php';
 requer_aluno();
 $info = get_aluno_info();
 
 $books = [];
 try {
-    require_once __DIR__ . '/../../../db/conexao.php';
+    require_once __DIR__ . '/../../../../db/conexao.php';
     $pdo = null;
     if (function_exists('getPDO')) {
         $pdo = getPDO();
@@ -33,7 +34,7 @@ if (empty($books)) {
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <title>Catálogo — Biblioteca FETEL</title>
-    <link rel="stylesheet" href="/TCC-etec/css/index.css">
+    <link rel="stylesheet" href="/TCC-etec/app/public/css/index.css">
 </head>
 <body>
 <?php require_once __DIR__ . '/../../header.php'; ?>

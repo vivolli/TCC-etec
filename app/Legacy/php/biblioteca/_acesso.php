@@ -2,12 +2,7 @@
 // canonical copy of php/biblioteca/_acesso.php
 // Reusable: requires an aluno session and provides CSRF helpers.
 
-$legacy = __DIR__ . '/../../../app/Legacy/php/biblioteca/_acesso.php';
-if (file_exists($legacy)) {
-    include_once $legacy;
-    return;
-}
-
+// Use the canonical session helper and CSRF helpers in app/php.
 require_once __DIR__ . '/../login/_sessao.php';
 
 function csrf_token(): string

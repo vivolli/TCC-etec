@@ -1,5 +1,9 @@
 <?php
-require_once __DIR__ . '/autenticacao.php';
+// canonical copy of php/sair.php
+// prefer app bootstrap if available
+@include_once __DIR__ . '/../../app/Core/Bootstrap.php';
+
+require_once __DIR__ . '/../autenticacao.php';
 
 encerrar_sessao();
 

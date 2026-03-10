@@ -1,5 +1,6 @@
 <?php
-require_once __DIR__ . '/../autenticacao.php';
+// canonical copy of php/login/entrar.php
+require_once __DIR__ . '/../../autenticacao.php';
 
 function redirecionar(string $destino): void
 {

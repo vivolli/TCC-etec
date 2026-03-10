@@ -18,8 +18,8 @@ $usuario_nome = trim((string)($sess['nome'] ?? '')) ?: 'Aluno';
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <title>Sou Aluno — FETEL</title>
-        <link rel="stylesheet" href="/TCC-etec/css/index.css">
-        <link rel="stylesheet" href="/TCC-etec/css/sou_aluno.css">
+    <link rel="stylesheet" href="/TCC-etec/app/public/css/index.css">
+    <link rel="stylesheet" href="/TCC-etec/app/public/css/sou_aluno.css">
     <meta name="robots" content="noindex">
     
 </head>

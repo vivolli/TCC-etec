@@ -150,8 +150,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Recuperar senha — FETEL</title>
-    <link rel="stylesheet" href="/TCC-etec/css/login.css">
-    <link rel="stylesheet" href="/TCC-etec/css/esqueceu_senha.css">
+    <link rel="stylesheet" href="/TCC-etec/app/public/css/login.css">
+    <link rel="stylesheet" href="/TCC-etec/app/public/css/esqueceu_senha.css">
     <meta name="robots" content="noindex">
 </head>
 <body>

@@ -2,11 +2,9 @@
 vendor/
 banco.txt
 
-# Frontend build / deps
 /app/Views/frontend-src/node_modules/
 /app/Views/frontend-src/.vite/
 /app/Views/public/frontend/.vite/
 
-# OS
 .DS_Store
 Thumbs.db
