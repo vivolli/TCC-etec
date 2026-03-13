@@ -1,0 +1,123 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body { font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; }
+
+/* custom small theme tokens for the Tailwind build */
+:root{
+	--blue: #003d99;
+	--blue-600: #0056d6;
+}
+
+/* small helper for the CTA used in index */
+.btn-primary{
+	@apply inline-flex items-center gap-3 px-5 py-3 rounded-lg text-white;
+	background-image: linear-gradient(90deg, var(--blue-600), #5b7bff);
+	box-shadow: 0 12px 30px rgba(3,28,70,0.08);
+}
+
+/* make hero easier to style when using the built css */
+.hero{ @apply relative overflow-hidden }
+
+/* respect reduced motion */
+@media (prefers-reduced-motion: reduce){
+	.btn-primary, .hero { transition: none !important; animation: none !important }
+}
+
+/* Advanced animations */
+@layer components {
+	.float-blob {
+		position: absolute;
+		right: -8%;
+		top: -10%;
+		width: 520px;
+		height: 520px;
+		background: radial-gradient(circle at 30% 30%, rgba(0,119,255,0.16), rgba(0,61,153,0.06) 40%, transparent 60%);
+		filter: blur(36px);
+		transform-origin: center;
+		animation: floatBlob 10s ease-in-out infinite;
+		z-index: 0;
+	}
+
+	@keyframes floatBlob {
+		0%{ transform: translateY(0) rotate(0deg) scale(1); }
+		25%{ transform: translateY(-12px) rotate(4deg) scale(1.02); }
+		50%{ transform: translateY(6px) rotate(-3deg) scale(1.01); }
+		75%{ transform: translateY(-6px) rotate(2deg) scale(1.015); }
+		100%{ transform: translateY(0) rotate(0deg) scale(1); }
+	}
+
+	.gradient-text {
+		background: linear-gradient(90deg,var(--blue-600),#5b7bff 60%);
+		-webkit-background-clip: text;
+		background-clip: text;
+		color: transparent;
+	}
+
+	.card-reveal {
+		transform: translateY(18px) scale(.995);
+		opacity: 0;
+		transition: all .6s cubic-bezier(.2,.9,.2,1);
+	}
+
+	.card-reveal.in-view {
+		transform: none;
+		opacity: 1;
+	}
+
+	.tilt-3d {
+		transform-style: preserve-3d;
+		perspective: 900px;
+		transition: transform .36s ease;
+	}
+
+	.tilt-3d:hover { transform: rotateX(4deg) translateY(-8px); }
+
+	.marquee {
+		overflow: hidden;
+		position: relative;
+	}
+
+	.marquee > div {
+		display: inline-block;
+		white-space: nowrap;
+		animation: marquee 16s linear infinite;
+	}
+
+	@keyframes marquee {
+		0%{ transform: translateX(0); }
+		100%{ transform: translateX(-50%); }
+	}
+}
+
+	/* Hero subtle grid overlay */
+	.hero::after{
+		content:'';
+		position:absolute;
+		inset:0;
+		background-image: linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+		background-size: 48px 48px, 48px 48px;
+		mix-blend-mode: overlay;
+		pointer-events:none;
+		z-index:1;
+		opacity:0.7;
+	}
+
+	/* Animated floating micro-orbs */
+	.orb { position:absolute; border-radius:9999px; filter: blur(8px); opacity:.7; }
+	.orb--a{ width:80px;height:80px; right:12%; top:18%; background: linear-gradient(180deg,#0077ff33,#0049c733); animation: orbMoveA 14s ease-in-out infinite; }
+	.orb--b{ width:48px;height:48px; left:6%; top:22%; background: linear-gradient(180deg,#5b7bff33,#003d9933); animation: orbMoveB 18s ease-in-out infinite; }
+
+	@keyframes orbMoveA{ 0%{ transform: translateY(0) } 50%{ transform: translateY(-28px) } 100%{ transform: translateY(0) } }
+	@keyframes orbMoveB{ 0%{ transform: translateY(0) scale(1) } 50%{ transform: translateY(22px) scale(1.08) } 100%{ transform: translateY(0) scale(1) } }
+
+	/* CTA spotlight on hover */
+	.btn-primary{ position:relative; overflow:hidden }
+	.btn-primary::after{ content:''; position:absolute; inset:0; background: radial-gradient(circle at 20% 10%, rgba(255,255,255,0.08), transparent 30%); opacity:0; transition: opacity .28s }
+	.btn-primary:hover::after{ opacity:1 }
+
+	/* make sure floating elements don't break reduced motion */
+	@media (prefers-reduced-motion: reduce){
+		.float-blob, .orb, .marquee > div { animation: none !important; }
+	}

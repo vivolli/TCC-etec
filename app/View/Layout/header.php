@@ -1,35 +1,15 @@
 <?php
-// header.php - cabeçalho reutilizavel
-// Try to initialize app bootstrap (non-fatal)
-$bootstrap = __DIR__ . '/../app/Core/Bootstrap.php';
-if (file_exists($bootstrap)) {
-  @include_once $bootstrap;
+// shim: include canonical header moved to app/php/header.php
+// This file keeps backward compatibility for templates that include /php/header.php
+$canonical = __DIR__ . '/../app/php/header.php';
+if (file_exists($canonical)) {
+    include $canonical;
+    return;
 }
-?>
 
-<link rel="stylesheet" href="/TCC/css/index.css">
-<link rel="stylesheet" href="/TCC/css/noticias.css">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+// Fallback: brief informative HTML if canonical file is missing
+http_response_code(500);
+?><div style="font-family:system-ui,Segoe UI,Roboto,Helvetica,Arial;color:#333;padding:18px;">
+  <strong>Header missing</strong><div>Expected <?php echo htmlspecialchars($canonical); ?> — contact the administrator.</div>
+</div>
 
-<header class="site-header">
-  <div class="container header-inner">
-      <a class="logo" href="/TCC-etec/index.html" aria-label="FETEL - Início">
-  <img src="/TCC-etec/img/fetel_sem_fundo.png" alt="FETEL" style="height:96px; width:auto; display:inline-block; vertical-align:middle;">
-    </a>
-
-    <button class="nav-toggle" aria-label="Abrir menu" aria-expanded="false">
-      <span class="hamburger"></span>
-    </button>
-
-    <nav class="nav" id="main-nav">
-      <ul class="nav-list">
-        <li><a href="/TCC-etec/index.html#destaques">Notícias</a></li>
-        <li><a href="/TCC-etec/php/secretaria.php">Secretaria</a></li>
-        <li><a href="/TCC-etec/index.html#biblioteca">Biblioteca</a></li>
-        <li><a href="/TCC-etec/index.html#sobre">Sobre a Escola</a></li>
-      </ul>
-    </nav>
-  </div>
-</header>

@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FETEL — Plataforma</title>
+    <meta name="description" content="Plataforma FETEL - Portal escolar" />
+  </head>
+  <body class="antialiased bg-white text-slate-900">
+    <div id="app" class="min-h-screen">
+      <header class="sticky top-0 z-40 bg-white/70 backdrop-blur-md border-b border-slate-100">
+        <div class="container mx-auto px-4 py-3 flex items-center justify-between">
+          <a href="/TCC-etec/" class="flex items-center gap-3">
+            <img src="/TCC-etec/app/public/img/fetel_sem_fundo.png" alt="FETEL" class="h-14 w-auto">
+            <span class="font-extrabold text-blue-800">FETEL</span>
+          </a>
+          <nav class="hidden md:flex gap-4 items-center">
+            <a href="#destaques" class="text-blue-600 font-semibold hover:underline">Notícias</a>
+            <a href="#biblioteca" class="text-blue-600 font-semibold hover:underline">Biblioteca</a>
+            <a href="#sobre" class="text-blue-600 font-semibold hover:underline">Sobre</a>
+            <a href="/TCC-etec/app/php/login/login.html" class="ml-4 inline-flex items-center px-3 py-2 bg-blue-600 text-white rounded-md shadow-sm hover:translate-y-[-2px] transition">Entrar</a>
+          </nav>
+        </div>
+      </header>
+
+      <main>
+        <section class="hero relative overflow-hidden">
+          <!-- decorative layers: animated grid, gradient orbs and svg ribbon -->
+          <div class="float-blob" aria-hidden="true"></div>
+          <div class="absolute inset-0 pointer-events-none -z-10" aria-hidden="true">
+            <svg class="w-full h-full" preserveAspectRatio="none" viewBox="0 0 1200 600" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="ribbon" x1="0" x2="1">
+                  <stop offset="0%" stop-color="#0049c7" stop-opacity="0.12"/>
+                  <stop offset="100%" stop-color="#6b8bff" stop-opacity="0.06"/>
+                </linearGradient>
+              </defs>
+              <path d="M0 220 C200 120 400 300 600 260 C800 220 1000 120 1200 200 L1200 600 L0 600 Z" fill="url(#ribbon)"></path>
+            </svg>
+          </div>
+
+          <div class="container mx-auto px-4 py-28 relative z-10">
+            <div class="max-w-3xl">
+              <h1 class="text-4xl md:text-5xl font-extrabold gradient-text leading-tight">Transforme seu aprendizado na FETEL</h1>
+              <p class="mt-4 text-lg text-slate-600 max-w-2xl">Uma plataforma dinâmica com recursos, eventos e conexões para sua formação técnica e profissional.</p>
+              <div class="mt-8 flex gap-4 items-center">
+                <a href="#destaques" class="btn-primary inline-flex items-center gap-3">Ver Notícias</a>
+                <a href="#biblioteca" class="inline-flex items-center gap-3 px-5 py-3 rounded-lg border border-slate-200 text-blue-700 hover:bg-slate-50">Biblioteca</a>
+                <div class="ml-6 hidden md:block marquee text-sm text-slate-600">
+                  <div>Novas bolsas abertas — Inscrições até 20/04 — Feira de profissões: 12/05 — Matricule-se já&nbsp;&nbsp;&nbsp;</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="destaques" class="py-16 bg-slate-50">
+          <div class="container mx-auto px-4">
+            <h2 class="text-2xl font-bold text-blue-800">Destaques</h2>
+            <p class="text-slate-600 mt-2">Últimas notícias e eventos</p>
+            <div class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
+              <article class="p-6 bg-white rounded-2xl shadow-md transform transition hover:-translate-y-3">
+                <h3 class="font-semibold text-slate-800">Início do Semestre</h3>
+                <p class="text-slate-500 mt-2">Calendário e orientações para matrícula.</p>
+              </article>
+              <article class="p-6 bg-white rounded-2xl shadow-md transform transition hover:-translate-y-3">
+                <h3 class="font-semibold text-slate-800">Processo Seletivo</h3>
+                <p class="text-slate-500 mt-2">Inscrições abertas para cursos técnicos.</p>
+              </article>
+              <article class="p-6 bg-white rounded-2xl shadow-md transform transition hover:-translate-y-3">
+                <h3 class="font-semibold text-slate-800">Feira de Profissões</h3>
+                <p class="text-slate-500 mt-2">Oportunidades de estágio e carreira.</p>
+              </article>
+            </div>
+          </div>
+        </section>
+
+        <section id="biblioteca" class="py-16">
+          <div class="container mx-auto px-4">
+            <h2 class="text-2xl font-bold text-blue-800">Biblioteca</h2>
+            <p class="text-slate-600 mt-2">Acervo físico e digital com recursos para estudo.</p>
+            <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div class="p-6 bg-white rounded-2xl shadow-md">
+                <h3 class="font-semibold">Catálogo Online</h3>
+                <p class="text-slate-500 mt-2">Busque livros, apostilas e artigos.</p>
+                <div class="mt-4">
+                  <a href="/TCC-etec/app/php/biblioteca/catalogo/index.php" class="inline-flex px-4 py-2 bg-blue-600 text-white rounded-md">Abrir catálogo</a>
+                </div>
+              </div>
+              <div class="p-6 bg-white rounded-2xl shadow-md">
+                <h3 class="font-semibold">Empréstimos</h3>
+                <p class="text-slate-500 mt-2">Regras e prazos para empréstimo de materiais físicos.</p>
+                <div class="mt-4">
+                  <a href="/TCC-etec/app/php/biblioteca/emprestimo/emprestimo.php" class="inline-flex px-4 py-2 border border-slate-200 rounded-md text-blue-700">Ver empréstimos</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="sobre" class="py-16 bg-slate-50">
+          <div class="container mx-auto px-4">
+            <h2 class="text-2xl font-bold text-blue-800">Sobre a Escola</h2>
+            <p class="text-slate-600 mt-2">Missão, visão e valores da FETEL.</p>
+          </div>
+        </section>
+      </main>
+
+      <footer class="bg-white border-t border-slate-100">
+        <div class="container mx-auto px-4 py-8">
+          <div class="flex justify-between items-center">
+            <p class="text-slate-600">© <span id="year">2026</span> FETEL — Todos os direitos reservados.</p>
+            <div class="flex gap-3">
+              <a href="#" class="text-blue-600">Instagram</a>
+            </div>
+          </div>
+        </div>
+      </footer>
+    </div>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
