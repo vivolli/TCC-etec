@@ -32,6 +32,16 @@ class SessionManager
             ini_set('session.use_strict_mode', '1');
             if ($lifetime > 0) ini_set('session.gc_maxlifetime', (string)$lifetime);
             session_start();
+
+            // Enforce inactivity timeout: 30 minutes
+            $timeout = 30 * 60;
+            $last = $_SESSION['last_activity'] ?? null;
+            if ($last !== null && (time() - (int)$last) > $timeout) {
+                // destroy old session and start fresh
+                $this->destroy();
+                session_start();
+            }
+            $_SESSION['last_activity'] = time();
         }
     }
 
@@ -39,6 +49,8 @@ class SessionManager
     {
         if (session_status() !== PHP_SESSION_ACTIVE) $this->start();
         session_regenerate_id(true);
+        // update last activity time on regenerate
+        $_SESSION['last_activity'] = time();
     }
 
     public function destroy(): void
