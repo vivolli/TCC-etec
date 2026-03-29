@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="pt-BR">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>FETEL — Plataforma Escolar</title>
+		<meta name="description" content="FETEL - Plataforma escolar para te ajudar." />
+		<link rel="stylesheet" href="css/style.css">
+		<link rel="preconnect" href="https://fonts.googleapis.com">
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+		<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+	</head>
+	<body>
+		<header class="site-header">
+			<div class="container header-inner">
+				<a class="logo" href="#home" aria-label="FETEL - Início">
+					<svg width="42" height="42" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+						<rect x="2" y="2" width="20" height="20" rx="4" fill="#0056b3" />
+						<path d="M6 16V8h3l3 6V8h3v8h-3l-3-6v6H6z" fill="#fff" />
+					</svg>
+					<span class="brand">FETEL</span>
+				</a>
+
+				<button class="nav-toggle" aria-label="Abrir menu" aria-expanded="false">
+					<span class="hamburger"></span>
+				</button>
+
+				<nav class="nav" id="main-nav">
+					<ul class="nav-list">
+						<li><a href="#destaques">Notícias</a></li>
+						<li><a href="php/secretaria.php">Secretaria</a></li>
+						<li><a href="/TCC/php/fale-conosco/fale-conosco.php">Fale Conosco</a></li>
+						<li><a href="#biblioteca">Biblioteca</a></li>
+						<li><a href="#sobre">Sobre a Escola</a></li>
+					</ul>
+				</nav>
+			</div>
+		</header>
+
+		<main>
+			<section id="home" class="hero">
+				<div class="container hero-inner">
+					<h1>Bem-vindo à FETEL</h1>
+					<p class="lead">Plataforma educacional para te ajudar.</p>
+					<div class="hero-cta">
+						<a class="btn primary" href="#destaques">Ver Notícias</a>
+					</div>
+				</div>
+			</section>
+			<section id="destaques" class="section alt">
+				<div class="container section-inner">
+					<div class="section-header">
+						<h2>Destaques</h2>
+						<p class="section-sub">Últimas notícias e eventos da FETEL.</p>
+					</div>
+
+					<div class="cards">
+						<article class="card">
+							<h3>Início do Semestre</h3>
+							<p>Calendário e orientações para matrícula e início das aulas.</p>
+							<a class="btn" href="#">Ler mais</a>
+						</article>
+
+						<article class="card">
+							<h3>Processo Seletivo</h3>
+							<p>Inscrições abertas para cursos técnicos. Veja prazos e requisitos.</p>
+							<a class="btn" href="#">Inscrições</a>
+						</article>
+
+						<article class="card">
+							<h3>Feira de Profissões</h3>
+							<p>Evento com empresas parceiras apresenta oportunidades de estágio e carreira.</p>
+							<a class="btn" href="#">Saiba mais</a>
+						</article>
+					</div>
+				</div>
+			</section>
+
+			<section id="secretaria" class="section">
+				<div class="container section-inner">
+					<div class="section-header">
+						<h2>Secretaria</h2>
+						<p class="section-sub">Serviços acadêmicos, horários e documentação.</p>
+					</div>
+
+					<div class="grid">
+						<div class="box">
+							<h4>Atendimento</h4>
+							<p>Atendimento presencial e online para matrículas, emissão de documentos e dúvidas acadêmicas.</p>
+						</div>
+						<div class="box">
+							<h4>Horários</h4>
+							<p>Consulte os horários das turmas e os períodos de atendimento da secretaria.</p>
+						</div>
+						<div class="box">
+							<h4>Financeiro</h4>
+							<p>Informações sobre mensalidades, bolsas e formas de pagamento.</p>
+						</div>
+					</div>
+				</div>
+			</section>
+
+			<section id="contato" class="section alt">
+				<div class="container section-inner">
+					<div class="section-header">
+						<h2>Fale Conosco</h2>
+						<p class="section-sub">Precisa de ajuda ou quer entrar em contato? Acesse nossa página de contato.</p>
+					</div>
+
+					<div class="hero-cta">
+						<a class="btn primary" href="/TCC/php/fale-conosco/fale-conosco.php">Ir para Fale Conosco</a>
+					</div>
+				</div>
+			</section>
+
+			<section id="biblioteca" class="section">
+				<div class="container section-inner">
+					<div class="section-header">
+						<h2>Biblioteca</h2>
+						<p class="section-sub">Acervo físico e digital com recursos para estudo.</p>
+					</div>
+
+					<div class="cards small">
+						<article class="card">
+							<div class="icon" aria-hidden="true">
+								<svg viewBox="0 0 24 24"><path fill="#0056b3" d="M6 2h9a3 3 0 013 3v13a1 1 0 01-1 1H6a1 1 0 01-1-1V3a1 1 0 011-1z"></path></svg>
+							</div>
+							<h3>Catálogo Online</h3>
+							<p>Busque livros, apostilas e artigos no catálogo digital da escola.</p>
+						</article>
+
+						<article class="card">
+							<div class="icon" aria-hidden="true">
+								<svg viewBox="0 0 24 24"><path fill="#0056b3" d="M4 19h16v2H4zM4 3h16v12H4z"></path></svg>
+							</div>
+							<h3>Empréstimo</h3>
+							<p>Regras e prazos para empréstimo de materiais físicos.</p>
+						</article>
+					</div>
+				</div>
+			</section>
+
+			<section id="sobre" class="section alt">
+				<div class="container section-inner">
+					<div class="section-header">
+						<h2>Sobre a Escola</h2>
+						<p class="section-sub">Missão, visão e valores da FETEL.</p>
+					</div>
+
+					<div class="about">
+						<p>A FETEL é uma instituição de ensino dedicada à formação de estudantes em diversas áreas, com foco na qualidade pedagógica, inclusão e desenvolvimento pessoal. Nossa missão é formar cidadãos críticos e preparados para os desafios contemporâneos, promovendo aprendizado relevante e integração com a comunidade.</p>
+					</div>
+				</div>
+			</section>
+		</main>
+
+		<footer class="site-footer">
+			<div class="container footer-inner">
+				<div class="contacts">
+					<h4>Contatos</h4>
+					<p>Rua Exemplo, 123 — Centro, São Paulo, SP</p>
+					<p>Telefone: (11) 4000-0000 | E-mail: contato@fetel.edu.br</p>
+				</div>
+
+				<div class="social">
+					<h4>Siga-nos</h4>
+					<div class="social-links">
+						<a href="#" aria-label="Facebook" class="social-link">
+							<svg viewBox="0 0 24 24"><path fill="#0056b3" d="M22 12a10 10 0 10-11.5 9.9v-7h-2v-3h2v-2.3c0-2 1.2-3.1 3-3.1.9 0 1.8.2 1.8.2v2h-1c-1 0-1.3.6-1.3 1.2V12h2.3l-.4 3h-1.9v7A10 10 0 0022 12z"/></svg>
+						</a>
+						<a href="#" aria-label="Instagram" class="social-link">
+							<svg viewBox="0 0 24 24"><path fill="#0056b3" d="M7 2h10a5 5 0 015 5v10a5 5 0 01-5 5H7a5 5 0 01-5-5V7a5 5 0 015-5zm5 6a4 4 0 100 8 4 4 0 000-8zM18 6a1 1 0 11-2 0 1 1 0 012 0z"/></svg>
+						</a>
+						<a href="#" aria-label="LinkedIn" class="social-link">
+							<svg viewBox="0 0 24 24"><path fill="#0056b3" d="M4 3a2 2 0 100 4 2 2 0 000-4zM3 8h2v11H3zM8 8h2v1.6c.3-.6 1-1.6 2.6-1.6 2.8 0 3.4 1.9 3.4 4.4V19h-2v-4c0-1-.1-2.2-1.3-2.2-1.3 0-1.5 1-1.5 2v4.2H8z"/></svg>
+						</a>
+					</div>
+				</div>
+			</div>
+
+			<div class="container copyright">
+				<p>© <span id="year"></span> FETEL — Todos os direitos reservados.</p>
+			</div>
+		</footer>
+
+		<script src="js/script.js" defer></script>
+	</body>
+</html>
