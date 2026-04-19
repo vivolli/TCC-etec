@@ -108,3 +108,9 @@ if (!function_exists('response_json')) {
         echo json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
     }
 }
+if (!function_exists('auth')) {
+    function auth(): \App\Support\AuthContext
+    {
+        return new \App\Support\AuthContext();
+    }
+}

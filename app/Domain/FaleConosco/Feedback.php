@@ -4,9 +4,13 @@ namespace App\Domain\FaleConosco;
 
 class Feedback extends Contato
 {
-    public function __construct(string $nome, string $email, string $mensagem, private string $tipo)
+    /** @var string */
+    private $tipo;
+
+    public function __construct(string $nome, string $email, string $mensagem, string $tipo)
     {
         parent::__construct($nome, $email, $mensagem);
+        $this->tipo = $tipo;
     }
 
     public function processar(): string
