@@ -17,6 +17,11 @@ class Application
         return $this->router;
     }
 
+    public function getRouter(): Router
+    {
+        return $this->router;
+    }
+
     public function run(): void
     {
         $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';

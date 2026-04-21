@@ -17,33 +17,53 @@ class ApiAuthController extends Controller
         $this->authService = new AuthService();
         $this->jwtService = new JwtService();
     }
+    
 
-    public function login(Request $request): void
-    {
-        $email = trim((string)$request->input('email', ''));
-        $password = (string)$request->input('password', $request->input('senha', ''));
-        $profile = $request->input('profile', $request->input('perfil', null));
-        $fingerprint = AuthService::fingerprintFromGlobals();
+  public function login(Request $request): void
+{
+    // Lê JSON corretamente
+    $raw = file_get_contents('php://input');
+    $body = json_decode($raw, true) ?? [];
 
-        $result = $this->authService->attempt($email, $password, $profile, $fingerprint);
+    $email = trim((string)($body['email'] ?? ''));
+    $password = (string)($body['password'] ?? '');
+    $profile = $body['profile'] ?? null;
 
-        if (!$result['ok']) {
-            $this->json(['ok' => false, 'message' => $result['message']], 401);
-            return;
-        }
-
-        $accessToken = $this->jwtService->generateAccessToken($result['user']);
-        $refreshToken = $this->jwtService->generateRefreshToken($result['user']);
-
+    // Validação básica
+    if ($email === '' || $password === '') {
         $this->json([
-            'ok' => true,
-            'access_token' => $accessToken,
-            'refresh_token' => $refreshToken,
-            'token_type' => 'bearer',
-            'expires_in' => 900,
-            'user' => $result['user'],
-        ]);
+            'ok' => false,
+            'message' => 'Email e senha são obrigatórios'
+        ], 400);
+        return;
     }
+
+    $fingerprint = AuthService::fingerprintFromGlobals();
+
+    $result = $this->authService->attempt($email, $password, $profile, $fingerprint);
+
+    if (!$result['ok']) {
+        $this->json([
+            'ok' => false,
+            'message' => $result['message']
+        ], 401);
+        return;
+    }
+
+    // Gera tokens
+    $accessToken = $this->jwtService->generateAccessToken($result['user']);
+    $refreshToken = $this->jwtService->generateRefreshToken($result['user']);
+
+    // Resposta correta
+    $this->json([
+        'ok' => true,
+        'access_token' => $accessToken,
+        'refresh_token' => $refreshToken,
+        'token_type' => 'bearer',
+        'expires_in' => 900,
+        'user' => $result['user'],
+    ]);
+}
 
     public function refresh(Request $request): void
     {
@@ -87,4 +107,5 @@ class ApiAuthController extends Controller
             'user' => $user,
         ]);
     }
+    
 }
