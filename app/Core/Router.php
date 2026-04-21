@@ -3,29 +3,31 @@
 namespace App\Core;
 
 use Closure;
+use App\Core\Request;
+use App\Core\MiddlewareManager;
 
 class Router
 {
-    /** @var array<int, array{methods:array<int,string>,pattern:string,handler:mixed}> */
+    /** @var array<int, array{methods:array<int,string>,pattern:string,handler:mixed,middlewares:array<int,string>}> */
     private array $routes = [];
 
-    public function get(string $uri, $handler): self
+    public function get(string $uri, $handler, array $middlewares = []): self
     {
-        return $this->add(['GET'], $uri, $handler);
+        return $this->add(['GET'], $uri, $handler, $middlewares);
     }
 
-    public function post(string $uri, $handler): self
+    public function post(string $uri, $handler, array $middlewares = []): self
     {
-        return $this->add(['POST'], $uri, $handler);
+        return $this->add(['POST'], $uri, $handler, $middlewares);
     }
 
-    public function match(array $methods, string $uri, $handler): self
+    public function match(array $methods, string $uri, $handler, array $middlewares = []): self
     {
         $upper = array_map('strtoupper', $methods);
-        return $this->add($upper, $uri, $handler);
+        return $this->add($upper, $uri, $handler, $middlewares);
     }
 
-    private function add(array $methods, string $uri, $handler): self
+    private function add(array $methods, string $uri, $handler, array $middlewares = []): self
     {
         $normalized = $uri === '/' ? '/' : rtrim($uri, '/');
         $regex = preg_replace_callback('/{([^}]+)}/', function ($matches) {
@@ -43,6 +45,7 @@ class Router
             'methods' => $methods,
             'pattern' => $pattern,
             'handler' => $handler,
+            'middlewares' => $middlewares,
         ];
 
         return $this;
@@ -52,6 +55,7 @@ class Router
     {
         $method = strtoupper($method);
         $uri = rtrim($uri, '/') ?: '/';
+        $request = Request::capture();
 
         foreach ($this->routes as $route) {
             if (!in_array($method, $route['methods'], true)) {
@@ -64,7 +68,8 @@ class Router
                     fn($key) => !is_int($key),
                     ARRAY_FILTER_USE_KEY
                 );
-                $this->invoke($route['handler'], $params);
+                $request->routeParams = $params;
+                $this->invoke($route['handler'], $params, $request, $route['middlewares']);
                 return true;
             }
         }
@@ -72,10 +77,16 @@ class Router
         return false;
     }
 
-    private function invoke($handler, array $params): void
+    private function invoke($handler, array $params, Request $request, array $middlewares): void
     {
+        if (!empty($middlewares) && !$this->processMiddlewares($middlewares, $request)) {
+            return;
+        }
+
+        $args = array_merge([$request], array_values($params));
+
         if ($handler instanceof Closure || is_callable($handler)) {
-            call_user_func_array($handler, $params);
+            call_user_func_array($handler, $args);
             return;
         }
 
@@ -83,11 +94,16 @@ class Router
             [$controller, $method] = explode('@', $handler, 2);
             $controllerClass = $this->resolveController($controller);
             $instance = new $controllerClass();
-            call_user_func_array([$instance, $method], $params);
+            call_user_func_array([$instance, $method], $args);
             return;
         }
 
         throw new \RuntimeException('Handler de rota inválido.');
+    }
+
+    private function processMiddlewares(array $middlewares, Request $request): bool
+    {
+        return (new MiddlewareManager())->handle($middlewares, $request);
     }
 
     private function resolveController(string $controller): string

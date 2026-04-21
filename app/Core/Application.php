@@ -17,6 +17,11 @@ class Application
         return $this->router;
     }
 
+    public function getRouter(): Router
+    {
+        return $this->router;
+    }
+
     public function run(): void
     {
         $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
@@ -33,23 +38,15 @@ class Application
             }
         }
 
-        // Proteção física de rotas admin: bloquear acesso se não for admin
-        if (str_starts_with($path, '/admin') || str_starts_with($path, '/api/admin') || str_starts_with($path, '/api/usuarios') || str_starts_with($path, '/api/livros') || str_starts_with($path, '/api/noticias')) {
+        // Proteção física de rotas admin para interface web.
+        if (str_starts_with($path, '/admin') && !str_starts_with($path, '/api')) {
             try {
                 \App\Support\Auth::start();
                 if (!\App\Support\Auth::check() || strtolower(\App\Support\Auth::role()) !== 'admin') {
-                    // se for requisição API, retornar JSON
-                    if (str_starts_with($path, '/api')) {
-                        http_response_code(403);
-                        header('Content-Type: application/json; charset=utf-8');
-                        echo json_encode(['ok' => false, 'message' => 'Acesso negado - admin requerido']);
-                        return;
-                    }
                     header('Location: /TCC-etec/login?error=' . urlencode('Acesso negado. Faça login como administrador.'));
                     return;
                 }
             } catch (\Throwable $e) {
-                // não vaza detalhes
                 header('Location: /TCC-etec/login?error=' . urlencode('Autenticação necessária.'));
                 return;
             }

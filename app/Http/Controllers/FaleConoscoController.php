@@ -50,13 +50,26 @@ class FaleConoscoController extends Controller
 
     private function criarContato(string $tipo, string $nome, string $email, string $mensagem): ?Contato
     {
-        return match ($tipo) {
-            'duvida' => new Duvida($nome, $email, $mensagem),
-            'reclamacao' => new Feedback($nome, $email, $mensagem, 'Reclamação'),
-            'elogio' => new Feedback($nome, $email, $mensagem, 'Elogio'),
-            'login' => new ProblemaComLogin($nome, $email, $mensagem),
-            'dados' => new DadosPessoais($nome, $email, $mensagem),
-            default => null,
-        };
+        if ($tipo === 'duvida') {
+            return new Duvida($nome, $email, $mensagem);
+        }
+
+        if ($tipo === 'reclamacao') {
+            return new Feedback($nome, $email, $mensagem, 'Reclamação');
+        }
+
+        if ($tipo === 'elogio') {
+            return new Feedback($nome, $email, $mensagem, 'Elogio');
+        }
+
+        if ($tipo === 'login') {
+            return new ProblemaComLogin($nome, $email, $mensagem);
+        }
+
+        if ($tipo === 'dados') {
+            return new DadosPessoais($nome, $email, $mensagem);
+        }
+
+        return null;
     }
 }

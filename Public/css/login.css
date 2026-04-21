@@ -5,8 +5,9 @@
   --card-border:#e0e5ee;
   --ink:#0c1b2f;
   --ink-muted:#5b6678;
-  --accent:#1f6feb;
-  --accent-soft:#c6d7f7;
+  --accent:#003d99;
+  --accent-strong:#0056d6;
+  --accent-soft:rgba(0,61,153,0.12);
   --error-bg:#fdecec;
   --error-text:#9f1d1d;
   --success-bg:#e4f7ec;
@@ -150,7 +151,7 @@ body{
 .field input:focus{
   outline:none;
   border-color:var(--accent);
-  box-shadow:0 0 0 3px rgba(31,111,235,0.15);
+  box-shadow:0 0 0 3px rgba(0,61,153,0.18);
 }
 
 .btn{
@@ -165,7 +166,7 @@ body{
 .btn.primary{
   width:100%;
   padding:14px 18px;
-  background:linear-gradient(120deg,var(--accent),#274b8f);
+  background:linear-gradient(120deg,var(--accent),var(--accent-strong));
   color:#fdfefe;
   box-shadow:0 18px 40px rgba(15,35,70,0.25);
 }

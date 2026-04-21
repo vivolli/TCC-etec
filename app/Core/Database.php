@@ -28,7 +28,7 @@ class Database
             $settings['driver'] ?? 'mysql',
             $settings['host'] ?? '127.0.0.1',
             $settings['port'] ?? 3306,
-            $settings['database'] ?? 'tcc',
+            $settings['database'] ?? 'tcc-etec',
             $settings['charset'] ?? 'utf8mb4'
         );
 
@@ -39,7 +39,10 @@ class Database
         try {
             self::$connection = new PDO($dsn, $username, $password, $options);
         } catch (PDOException $e) {
-            throw new \RuntimeException('Falha ao conectar ao banco de dados: ' . $e->getMessage(), 0, $e);
+            if ($e->getCode() === '1049' || $e->getCode() === 1049) {
+                throw new \RuntimeException('Banco de dados não encontrado. Verifique DB_NAME e a existência do banco: ' . $e->getMessage(), 0, $e);
+            }
+            throw new \RuntimeException('Falha ao conectar ao banco: ' . $e->getMessage(), 0, $e);
         }
 
         return self::$connection;

@@ -118,13 +118,18 @@ class AuthService
         $profile = strtolower($profile);
         $role = strtolower($role);
 
-        return match ($profile) {
-            'admin' => in_array($role, self::ADMIN_ROLES, true),
-            'professor' => in_array($role, self::PROFESSOR_ROLES, true),
-            'secretaria' => in_array($role, self::SECRETARIA_ROLES, true),
-            'aluno' => in_array($role, self::STUDENT_ROLES, true),
-            default => true,
-        };
+        switch ($profile) {
+            case 'admin':
+                return in_array($role, self::ADMIN_ROLES, true);
+            case 'professor':
+                return in_array($role, self::PROFESSOR_ROLES, true);
+            case 'secretaria':
+                return in_array($role, self::SECRETARIA_ROLES, true);
+            case 'aluno':
+                return in_array($role, self::STUDENT_ROLES, true);
+            default:
+                return true;
+        }
     }
 
     public function defaultRedirectForRole(string $role): string

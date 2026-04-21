@@ -5,17 +5,20 @@ namespace App\Http\Controllers;
 use App\Core\Controller;
 use App\Models\Livro;
 use App\Models\Emprestimo;
+use App\Services\LibraryService;
 use App\Support\Auth;
 
 class BibliotecaController extends Controller
 {
     private Livro $livroModel;
     private Emprestimo $emprestimoModel;
+    private LibraryService $libraryService;
 
     public function __construct()
     {
         $this->livroModel = new Livro();
         $this->emprestimoModel = new Emprestimo();
+        $this->libraryService = new LibraryService();
     }
 
     public function index(): void
@@ -23,86 +26,110 @@ class BibliotecaController extends Controller
         Auth::start();
 
         $pagina = isset($_GET['page']) ? max(1, (int)$_GET['page']) : 1;
-        $busca = isset($_GET['search']) ? trim((string)$_GET['search']) : '';
-        $limite = 20;
+        $filtros = [
+            'search' => trim((string)($_GET['search'] ?? '')),
+            'autor' => trim((string)($_GET['autor'] ?? '')),
+            'categoria' => trim((string)($_GET['categoria'] ?? '')),
+            'curso' => trim((string)($_GET['curso'] ?? '')),
+            'ano' => trim((string)($_GET['ano'] ?? '')),
+            'disponibilidade' => trim((string)($_GET['disponibilidade'] ?? '')),
+        ];
+        $limite = 18;
         $offset = ($pagina - 1) * $limite;
 
         try {
-            if (!empty($busca)) {
-                $livros = $this->livroModel->buscarPorTitulo($busca, 100);
-                $totalLivros = count($livros);
-                $livros = array_slice($livros, $offset, $limite);
-            } else {
-                $livros = $this->livroModel->listarComPaginacao($limite, $offset);
-                $totalLivros = $this->livroModel->contar();
-            }
+            $resultado = $this->livroModel->listarFiltrado($filtros, $limite, $offset);
+            $livros = $resultado['dados'] ?? [];
+            $totalLivros = $resultado['total'] ?? 0;
+            $totalPaginas = max(1, (int)ceil($totalLivros / $limite));
 
-            $totalPaginas = ceil($totalLivros / $limite);
+            $categorias = $this->livroModel->obterCategorias();
+            $cursos = $this->livroModel->obterCursos();
+            $anos = $this->livroModel->obterAnos();
+            $livrosDestaque = array_slice($livros, 0, 6);
 
+            $usuario = null;
             $emprestimosAtivos = [];
+            $emprestimosAtivosCount = 0;
             if (Auth::check()) {
                 $usuario = Auth::user();
                 $emprestimosAtivos = $this->emprestimoModel->buscarAtivos($usuario['id']);
+                $emprestimosAtivosCount = $this->emprestimoModel->contarAtivos($usuario['id']);
             }
 
             echo $this->view('biblioteca/index', [
                 'livros' => $livros,
+                'livros_destaque' => $livrosDestaque,
                 'total_livros' => $totalLivros,
+                'total_disponiveis' => $this->livroModel->contarDisponiveis(),
+                'emprestimos_ativos_count' => $emprestimosAtivosCount,
+                'categorias_count' => count($categorias),
                 'pagina_atual' => $pagina,
                 'total_paginas' => $totalPaginas,
-                'busca' => $busca,
-                'emprestimos_ativos' => $emprestimosAtivos,
-                'autenticado' => Auth::check()
+                'busca' => $filtros['search'],
+                'filtros' => $filtros,
+                'categorias' => $categorias,
+                'cursos' => $cursos,
+                'anos' => $anos,
+                'autenticado' => Auth::check(),
+                'usuario' => $usuario,
+                'erro' => $_GET['error'] ?? null,
             ]);
         } catch (\Throwable $e) {
             error_log('Erro na biblioteca: ' . $e->getMessage());
             echo $this->view('biblioteca/index', [
                 'livros' => [],
+                'livros_destaque' => [],
                 'total_livros' => 0,
+                'total_disponiveis' => 0,
+                'emprestimos_ativos_count' => 0,
+                'categorias_count' => 0,
                 'pagina_atual' => 1,
                 'total_paginas' => 0,
-                'busca' => $busca,
-                'emprestimos_ativos' => [],
+                'busca' => $filtros['search'],
+                'filtros' => $filtros,
+                'categorias' => [],
+                'cursos' => [],
+                'anos' => [],
                 'autenticado' => Auth::check(),
-                'erro' => 'Erro ao carregar livros'
+                'usuario' => null,
+                'erro' => 'Erro ao carregar livros',
             ]);
         }
     }
 
-    public function catalogo(): void
+    public function buscar(): void
     {
         Auth::start();
 
-        try {
-            $limite = 50;
-            $offset = 0;
-            $livros = $this->livroModel->listarComPaginacao($limite, $offset);
+        $termo = trim((string)($_GET['q'] ?? ''));
+        if (empty($termo)) {
+            $this->json(['error' => 'Nenhum termo de busca informado.'], 400);
+            return;
+        }
 
-            echo $this->view('biblioteca/catalogo', [
-                'livros' => $livros,
-                'autenticado' => Auth::check()
-            ]);
+        try {
+            $livros = $this->livroModel->buscarPorTermo($termo, 100);
+            $this->json(['livros' => $livros]);
         } catch (\Throwable $e) {
-            error_log('Erro ao carregar catálogo: ' . $e->getMessage());
-            header('Location: /TCC-etec/?error=' . urlencode('Erro ao carregar catálogo.'));
-            exit;
+            error_log('Erro na busca: ' . $e->getMessage());
+            $this->json(['error' => 'Erro ao buscar livros.'], 500);
         }
     }
 
-    public function mostrar(int $livroId): void
+    public function detalhes(int $livroId): void
     {
         Auth::start();
 
         try {
             $livro = $this->livroModel->obterPorId($livroId);
-
             if (!$livro) {
-                header('HTTP/1.1 404 Not Found');
-                echo $this->view('erros/404');
-                exit;
+                $this->json(['error' => 'Livro não encontrado.'], 404);
+                return;
             }
 
-            $this->livroModel->incrementarVisualizacoes($livroId);
+            $livro['disponivel'] = (isset($livro['disponivel']) && (int)$livro['disponivel'] === 1)
+                || (isset($livro['copias_disponiveis']) && (int)$livro['copias_disponiveis'] > 0);
 
             $jaEmprestado = false;
             if (Auth::check()) {
@@ -111,53 +138,44 @@ class BibliotecaController extends Controller
                 $jaEmprestado = in_array($livroId, array_column($emprestimosAtivos, 'livro_id'));
             }
 
-            echo $this->view('biblioteca/livro', [
+            $this->json([
                 'livro' => $livro,
+                'autenticado' => Auth::check(),
                 'ja_emprestado' => $jaEmprestado,
-                'autenticado' => Auth::check()
             ]);
         } catch (\Throwable $e) {
-            error_log('Erro ao carregar livro: ' . $e->getMessage());
-            header('Location: /TCC-etec/biblioteca?error=' . urlencode('Erro ao carregar livro.'));
-            exit;
+            error_log('Erro ao carregar detalhes do livro: ' . $e->getMessage());
+            $this->json(['error' => 'Erro ao carregar dados do livro.'], 500);
         }
     }
 
-    public function buscar(): void
+    public function solicitarEmprestimo(): void
     {
         Auth::start();
 
-        $termo = isset($_GET['q']) ? trim((string)$_GET['q']) : '';
+        if (!Auth::check()) {
+            $this->json(['error' => 'Você precisa estar logado para solicitar um empréstimo.'], 401);
+            return;
+        }
 
-        if (empty($termo)) {
-            header('Location: /TCC-etec/biblioteca');
-            exit;
+        $livroId = isset($_POST['livro_id']) ? (int)$_POST['livro_id'] : 0;
+        if ($livroId <= 0) {
+            $this->json(['error' => 'Livro inválido para solicitação.'], 400);
+            return;
         }
 
         try {
-            $livrosPorTitulo = $this->livroModel->buscarPorTitulo($termo, 50);
-            $livrosPorAutor = $this->livroModel->buscarPorAutor($termo, 50);
+            $usuario = Auth::user();
+            $resultado = $this->libraryService->requestLoan($usuario['id'], $livroId);
 
-            $livros = array_merge($livrosPorTitulo, $livrosPorAutor);
-            $livros = array_values(array_unique($livros, SORT_REGULAR));
-
-            $emprestimosAtivos = [];
-            if (Auth::check()) {
-                $usuario = Auth::user();
-                $emprestimosAtivos = $this->emprestimoModel->buscarAtivos($usuario['id']);
-            }
-
-            echo $this->view('biblioteca/resultados', [
-                'livros' => $livros,
-                'termo' => $termo,
-                'total' => count($livros),
-                'emprestimos_ativos' => $emprestimosAtivos,
-                'autenticado' => Auth::check()
+            $this->json([
+                'success' => true,
+                'message' => 'Empréstimo solicitado com sucesso. Aguarde a aprovação da secretaria.',
+                'emprestimo' => $resultado,
             ]);
         } catch (\Throwable $e) {
-            error_log('Erro na busca: ' . $e->getMessage());
-            header('Location: /TCC-etec/biblioteca?error=' . urlencode('Erro ao buscar livros.'));
-            exit;
+            $mensagem = $e->getMessage();
+            $this->json(['error' => $mensagem], 500);
         }
     }
 }

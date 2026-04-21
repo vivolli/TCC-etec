@@ -6,32 +6,58 @@ use App\Core\Controller;
 use App\Models\User;
 use App\Models\Livro;
 use App\Models\Noticia;
-use App\Support\Auth;
+use App\Services\JwtService;
 
 class ApiAdminController extends Controller
 {
     private User $usuarioModel;
     private Livro $livroModel;
     private Noticia $noticiaModel;
+    private JwtService $jwtService;
 
     public function __construct()
     {
         $this->usuarioModel = new User();
         $this->livroModel = new Livro();
         $this->noticiaModel = new Noticia();
+        $this->jwtService = new JwtService();
+    }
+
+    private function requireJwtAuth(): array
+    {
+        $headers = getallheaders();
+        $token = null;
+
+        if (isset($headers['Authorization'])) {
+            $auth = $headers['Authorization'];
+            if (str_starts_with($auth, 'Bearer ')) {
+                $token = trim(substr($auth, 7));
+            }
+        }
+
+        if (!$token) {
+            $this->json(['ok' => false, 'message' => 'Token de autenticação não fornecido.'], 401);
+            exit;
+        }
+
+        $user = $this->jwtService->validateAccessToken($token);
+        if (!$user) {
+            $this->json(['ok' => false, 'message' => 'Token inválido ou expirado.'], 401);
+            exit;
+        }
+
+        if (strtolower((string)$user['role']) !== 'admin') {
+            $this->json(['ok' => false, 'message' => 'Acesso negado - admin requerido.'], 403);
+            exit;
+        }
+
+        return $user;
     }
 
     public function listarUsuarios(): void
     {
         try {
-            Auth::requireAuth();
-            Auth::requireRole('admin');
-
-            // CSRF token from header
-            $token = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? null;
-            if (!\App\Core\Csrf::validateToken($token)) {
-                $this->respondJson(['ok' => false, 'message' => 'Token CSRF inválido.'], 403);
-            }
+            $this->requireJwtAuth();
 
             $pagina = (int)($_GET['pagina'] ?? 1);
             $porPagina = (int)($_GET['por_pagina'] ?? 10);
@@ -40,27 +66,22 @@ class ApiAdminController extends Controller
             $usuarios = $this->usuarioModel->paginate($offset, $porPagina);
             $total = $this->usuarioModel->count();
 
-            $this->respondJson([
+            $this->json([
+                'ok' => true,
                 'data' => $usuarios,
                 'pagina' => $pagina,
-                'por_pagina' => $porPagina,
                 'total' => $total,
             ]);
         } catch (\Throwable $e) {
-            $this->respondJson(['ok' => false, 'message' => 'Erro ao listar usuários.'], 500);
+            error_log($e->getMessage());
+            $this->json(['ok' => false, 'message' => 'Erro ao listar usuários.'], 500);
         }
     }
 
     public function criarUsuario(): void
     {
         try {
-            Auth::requireAuth();
-            Auth::requireRole('admin');
-
-            $token = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? null;
-            if (!\App\Core\Csrf::validateToken($token)) {
-                $this->respondJson(['ok' => false, 'message' => 'Token CSRF inválido.'], 403);
-            }
+            $this->requireJwtAuth();
 
             $dados = json_decode(file_get_contents('php://input'), true) ?? [];
 
@@ -69,16 +90,17 @@ class ApiAdminController extends Controller
             $papel = trim((string)($dados['papel'] ?? ''));
 
             if (!$email || $nome === '' || $papel === '') {
-                $this->respondJson(['ok' => false, 'message' => 'Campos obrigatórios faltando'], 400);
+                $this->json(['ok' => false, 'message' => 'Campos obrigatórios faltando'], 422);
                 return;
             }
 
             if ($this->usuarioModel->findByEmail($email)) {
-                $this->respondJson(['ok' => false, 'message' => 'Email já existe'], 409);
+                $this->json(['ok' => false, 'message' => 'Email já existe'], 409);
                 return;
             }
 
             $senha = $dados['senha'] ?? bin2hex(random_bytes(8));
+
             $usuarioId = $this->usuarioModel->create([
                 'email' => $email,
                 'nome_completo' => $nome,
@@ -87,76 +109,62 @@ class ApiAdminController extends Controller
                 'ativo' => 1,
             ]);
 
-            $this->usuarioModel->recordAudit(
-                Auth::user()['id'],
-                'usuario_criado',
-                ['usuario_id' => $usuarioId, 'email' => $email]
-            );
-
-            $this->respondJson([
+            $this->json([
                 'ok' => true,
-                'data' => ['id' => $usuarioId, 'email' => $email],
+                'data' => ['id' => $usuarioId],
             ], 201);
+
         } catch (\Throwable $e) {
-            $this->respondJson(['ok' => false, 'message' => 'Erro ao criar usuário.'], 500);
+            error_log($e->getMessage());
+            $this->json(['ok' => false, 'message' => 'Erro ao criar usuário.'], 500);
         }
     }
 
-    public function deletarUsuario(string $usuarioId): void
+    public function deletarUsuario(): void
     {
-        Auth::requireAuth();
-        Auth::requireRole('admin');
+        try {
+            $this->requireJwtAuth();
 
-        $id = (int)$usuarioId;
-        if ($id <= 0) {
-            $this->respondJson(['ok' => false, 'message' => 'ID inválido'], 400);
-            return;
+            $dados = json_decode(file_get_contents('php://input'), true) ?? [];
+            $usuarioId = (int)($dados['usuario_id'] ?? 0);
+
+            if ($usuarioId <= 0) {
+                $this->json(['ok' => false, 'message' => 'ID de usuário inválido'], 422);
+                return;
+            }
+
+            $this->usuarioModel->delete($usuarioId);
+
+            $this->json(['ok' => true, 'message' => 'Usuário deletado com sucesso']);
+
+        } catch (\Throwable $e) {
+            error_log($e->getMessage());
+            $this->json(['ok' => false, 'message' => 'Erro ao deletar usuário.'], 500);
         }
-
-        $usuario = $this->usuarioModel->findById($id);
-        if (!$usuario) {
-            $this->respondJson(['ok' => false, 'message' => 'Usuário não encontrado'], 404);
-            return;
-        }
-
-        $this->usuarioModel->delete($id);
-        $this->usuarioModel->recordAudit(
-            Auth::user()['id'],
-            'usuario_deletado',
-            ['usuario_id' => $id, 'email' => $usuario['email']]
-        );
-
-        $this->respondJson(['ok' => true], 200);
     }
 
     public function listarLivros(): void
     {
         try {
-            Auth::requireAuth();
-            Auth::requireRole('admin');
-
-            $token = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? null;
-            if (!\App\Core\Csrf::validateToken($token)) {
-                $this->respondJson(['ok' => false, 'message' => 'Token CSRF inválido.'], 403);
-            }
+            $this->requireJwtAuth();
 
             $livros = $this->livroModel->all();
-            $this->respondJson(['data' => $livros]);
+
+            $this->json([
+                'ok' => true,
+                'data' => $livros
+            ]);
+
         } catch (\Throwable $e) {
-            $this->respondJson(['ok' => false, 'message' => 'Erro ao listar livros.'], 500);
+            error_log($e->getMessage());
+            $this->json(['ok' => false, 'message' => 'Erro ao listar livros.'], 500);
         }
     }
 
     public function criarLivro(): void
     {
         try {
-            Auth::requireAuth();
-            Auth::requireRole('admin');
-
-            $token = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? null;
-            if (!\App\Core\Csrf::validateToken($token)) {
-                $this->respondJson(['ok' => false, 'message' => 'Token CSRF inválido.'], 403);
-            }
+            $this->requireJwtAuth();
 
             $dados = json_decode(file_get_contents('php://input'), true) ?? [];
 
@@ -165,7 +173,7 @@ class ApiAdminController extends Controller
             $isbn = trim((string)($dados['isbn'] ?? ''));
 
             if ($titulo === '' || $autor === '' || $isbn === '') {
-                $this->respondJson(['ok' => false, 'message' => 'Campos obrigatórios faltando'], 400);
+                $this->json(['ok' => false, 'message' => 'Campos obrigatórios faltando'], 422);
                 return;
             }
 
@@ -177,116 +185,129 @@ class ApiAdminController extends Controller
                 'quantidade_disponivel' => (int)($dados['quantidade'] ?? 0),
             ]);
 
-            $this->livroModel->recordAudit(
-                Auth::user()['id'],
-                'livro_criado',
-                ['livro_id' => $livroId, 'titulo' => $titulo]
-            );
+            $this->json([
+                'ok' => true,
+                'data' => ['id' => $livroId]
+            ], 201);
 
-            $this->respondJson(['ok' => true, 'data' => ['id' => $livroId]], 201);
         } catch (\Throwable $e) {
-            $this->respondJson(['ok' => false, 'message' => 'Erro ao criar livro.'], 500);
+            error_log($e->getMessage());
+            $this->json(['ok' => false, 'message' => 'Erro ao criar livro.'], 500);
         }
     }
 
-    public function deletarLivro(string $livroId): void
+    public function deletarLivro(): void
     {
-        Auth::requireAuth();
-        Auth::requireRole('admin');
+        try {
+            $this->requireJwtAuth();
 
-        $id = (int)$livroId;
-        $livro = $this->livroModel->findById($id);
-        if (!$livro) {
-            $this->respondJson(['ok' => false, 'message' => 'Livro não encontrado'], 404);
-            return;
+            $dados = json_decode(file_get_contents('php://input'), true) ?? [];
+            $livroId = (int)($dados['livro_id'] ?? 0);
+
+            if ($livroId <= 0) {
+                $this->json(['ok' => false, 'message' => 'ID de livro inválido'], 422);
+                return;
+            }
+
+            $this->livroModel->delete($livroId);
+
+            $this->json(['ok' => true, 'message' => 'Livro deletado com sucesso']);
+
+        } catch (\Throwable $e) {
+            error_log($e->getMessage());
+            $this->json(['ok' => false, 'message' => 'Erro ao deletar livro.'], 500);
         }
-
-        $this->livroModel->delete($id);
-        $this->livroModel->recordAudit(
-            Auth::user()['id'],
-            'livro_deletado',
-            ['livro_id' => $id, 'titulo' => $livro['titulo']]
-        );
-
-        $this->respondJson(['ok' => true], 200);
     }
 
     public function listarNoticias(): void
     {
-        Auth::requireAuth();
-        Auth::requireRole('admin');
+        try {
+            $this->requireJwtAuth();
 
-        $noticias = $this->noticiaModel->all();
-        $this->respondJson(['data' => $noticias]);
+            $noticias = $this->noticiaModel->all();
+
+            $this->json([
+                'ok' => true,
+                'data' => $noticias
+            ]);
+
+        } catch (\Throwable $e) {
+            error_log($e->getMessage());
+            $this->json(['ok' => false, 'message' => 'Erro ao listar notícias.'], 500);
+        }
     }
 
     public function criarNoticia(): void
     {
-        Auth::requireAuth();
-        Auth::requireRole('admin');
+        try {
+            $this->requireJwtAuth();
 
-        $dados = json_decode(file_get_contents('php://input'), true) ?? [];
+            $dados = json_decode(file_get_contents('php://input'), true) ?? [];
 
-        if (empty($dados['titulo']) || empty($dados['conteudo'])) {
-            $this->respondJson(['ok' => false, 'message' => 'Título e conteúdo são obrigatórios'], 400);
-            return;
+            $titulo = trim((string)($dados['titulo'] ?? ''));
+            $conteudo = trim((string)($dados['conteudo'] ?? ''));
+
+            if ($titulo === '' || $conteudo === '') {
+                $this->json(['ok' => false, 'message' => 'Campos obrigatórios faltando'], 422);
+                return;
+            }
+
+            $noticiaId = $this->noticiaModel->create([
+                'titulo' => $titulo,
+                'conteudo' => $conteudo,
+                'autor_id' => auth()->id(),
+                'publicado' => 1,
+            ]);
+
+            $this->json([
+                'ok' => true,
+                'data' => ['id' => $noticiaId]
+            ], 201);
+
+        } catch (\Throwable $e) {
+            error_log($e->getMessage());
+            $this->json(['ok' => false, 'message' => 'Erro ao criar notícia.'], 500);
         }
-
-        $usuario = Auth::user();
-        $noticiaId = $this->noticiaModel->create([
-            'titulo' => $dados['titulo'],
-            'conteudo' => $dados['conteudo'],
-            'autor_id' => $usuario['id'],
-            'publicado' => (int)($dados['publicado'] ?? 0),
-        ]);
-
-        $this->noticiaModel->recordAudit(
-            $usuario['id'],
-            'noticia_criada',
-            ['noticia_id' => $noticiaId, 'titulo' => $dados['titulo']]
-        );
-
-        $this->respondJson(['ok' => true, 'data' => ['id' => $noticiaId]], 201);
     }
 
-    public function deletarNoticia(string $noticiaId): void
+    public function deletarNoticia(): void
     {
-        Auth::requireAuth();
-        Auth::requireRole('admin');
+        try {
+            $this->requireJwtAuth();
 
-        $id = (int)$noticiaId;
-        $noticia = $this->noticiaModel->findById($id);
-        if (!$noticia) {
-            $this->respondJson(['ok' => false, 'message' => 'Notícia não encontrada'], 404);
-            return;
+            $dados = json_decode(file_get_contents('php://input'), true) ?? [];
+            $noticiaId = (int)($dados['noticia_id'] ?? 0);
+
+            if ($noticiaId <= 0) {
+                $this->json(['ok' => false, 'message' => 'ID de notícia inválido'], 422);
+                return;
+            }
+
+            $this->noticiaModel->delete($noticiaId);
+
+            $this->json(['ok' => true, 'message' => 'Notícia deletada com sucesso']);
+
+        } catch (\Throwable $e) {
+            error_log($e->getMessage());
+            $this->json(['ok' => false, 'message' => 'Erro ao deletar notícia.'], 500);
         }
-
-        $this->noticiaModel->delete($id);
-        $this->noticiaModel->recordAudit(
-            Auth::user()['id'],
-            'noticia_deletada',
-            ['noticia_id' => $id, 'titulo' => $noticia['titulo']]
-        );
-
-        $this->respondJson(['ok' => true], 200);
     }
 
     public function auditoria(): void
     {
-        Auth::requireAuth();
-        Auth::requireRole('admin');
+        try {
+            $this->requireJwtAuth();
 
-        $limite = (int)($_GET['limite'] ?? 50);
-        $registros = $this->usuarioModel->fetchAuditLog($limite);
+            $auditoria = $this->usuarioModel->fetchAuditLog();
 
-        $this->respondJson(['data' => $registros]);
-    }
+            $this->json([
+                'ok' => true,
+                'data' => $auditoria
+            ]);
 
-    private function respondJson(array $data, int $statusCode = 200): void
-    {
-        http_response_code($statusCode);
-        header('Content-Type: application/json; charset=utf-8');
-        echo json_encode($data, JSON_UNESCAPED_UNICODE);
-        exit;
+        } catch (\Throwable $e) {
+            error_log($e->getMessage());
+            $this->json(['ok' => false, 'message' => 'Erro ao buscar auditoria.'], 500);
+        }
     }
 }

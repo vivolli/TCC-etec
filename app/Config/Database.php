@@ -13,10 +13,10 @@ class Database {
     }
 
     private function conectar() {
-        $host = 'localhost';
-        $dbname = 'TCC_ETEC';
-        $user = 'root';
-        $password = '';
+        $host = getenv('DB_HOST') ?: '127.0.0.1';
+        $dbname = getenv('DB_DATABASE') ?: getenv('DB_NAME') ?: 'tcc-etec';
+        $user = getenv('DB_USERNAME') ?: getenv('DB_USER') ?: 'root';
+        $password = getenv('DB_PASSWORD') ?: '';
 
         try {
             $this->connection = new PDO(
@@ -30,7 +30,7 @@ class Database {
                 ]
             );
         } catch (\PDOException $e) {
-            die('Erro de conexão: ' . $e->getMessage());
+            throw new \RuntimeException('Falha ao conectar ao banco: ' . $e->getMessage(), 0, $e);
         }
     }
 
