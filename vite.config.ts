@@ -3,10 +3,10 @@ import react from '@vitejs/plugin-react';
 import path from 'path';
 
 export default defineConfig({
-  base: '/TCC-etec/public/dist/',
+  base: '/', 
   plugins: [react()],
   build: {
-    outDir: 'public/dist',
+    outDir: 'dist', 
     emptyOutDir: true,
     rollupOptions: {
       input: 'src/main.tsx',
@@ -26,9 +26,5 @@ export default defineConfig({
     alias: {
       '@': path.resolve(__dirname, './src'),
     },
-  },
-  server: {
-    port: 5173,
-    strictPort: false,
   },
 });
