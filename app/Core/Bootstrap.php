@@ -31,13 +31,44 @@ class Bootstrap
         }
 
         mb_internal_encoding('UTF-8');
-    }
-}
 
-if (!function_exists('app_get_pdo_global')) {
-    function app_get_pdo_global()
+        // ✅ Adicionar HTTP security headers
+        self::setSecurityHeaders();
+    }
+
+    /**
+     * ✅ Define headers de segurança HTTP para proteger contra ataques comuns
+     */
+    private static function setSecurityHeaders(): void
     {
-        return Database::connection();
+        // Previne clickjacking (XF)
+        header('X-Frame-Options: SAMEORIGIN', true);
+
+        // Protege contra MIME type sniffing (XSS)
+        header('X-Content-Type-Options: nosniff', true);
+
+        // Protege contra XSS (navegadores modernos)
+        header('X-XSS-Protection: 1; mode=block', true);
+
+        // Content Security Policy (CSP) básico
+        $csp = "default-src 'self'; "
+             . "script-src 'self' 'unsafe-inline'; "
+             . "style-src 'self' 'unsafe-inline'; "
+             . "img-src 'self' data: https:; "
+             . "font-src 'self' data:";
+        header('Content-Security-Policy: ' . $csp, true);
+
+        // HSTS (HTTP Strict Transport Security)
+        // Apenas ativa em HTTPS
+        if (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') {
+            header('Strict-Transport-Security: max-age=31536000; includeSubDomains', true);
+        }
+
+        // Referrer Policy
+        header('Referrer-Policy: strict-origin-when-cross-origin', true);
+
+        // Feature Policy / Permissions Policy (navegadores modernos)
+        header('Permissions-Policy: accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()', true);
     }
 }
 

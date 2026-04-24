@@ -17,7 +17,16 @@ $router->get('/index.html', function () {
 
 $router->get('/login', 'AuthController@showForm');
 $router->post('/login', 'AuthController@authenticate');
+$router->get('/logout', 'AuthController@logout');
 $router->get('/admin', 'AdminPageController@__invoke');
+
+// Módulos de CMS/Gestão
+$router->get('/admin/cms/usuarios', 'AdminController@gerenciarUsuarios');
+$router->post('/admin/cms/usuario/criar', 'AdminController@criarUsuario');
+$router->post('/admin/cms/usuario/{id}/excluir', 'AdminController@excluirUsuario');
+$router->get('/admin/cms/noticias', 'AdminController@gerenciarNoticias');
+$router->post('/admin/cms/noticia/criar', 'AdminController@criarNoticia');
+$router->post('/admin/cms/noticia/{id}/excluir', 'AdminController@excluirNoticia');
 
 $router->get('/aluno', 'DashboardAlunoController@index');
 $router->get('/aluno/biblioteca', 'DashboardAlunoController@biblioteca');
@@ -93,5 +102,9 @@ $router->post('/api/noticias', 'ApiAdminController@criarNoticia', ['auth', 'role
 $router->post('/api/noticias/{noticiaId}/deletar', 'ApiAdminController@deletarNoticia', ['auth', 'role:admin']);
 
 $router->get('/api/auditoria', 'ApiAdminController@auditoria', ['auth', 'role:admin']);
+
+// Migrações API
+$router->get('/api/migrations/status', 'AdminController@verificarMigracoes');
+$router->post('/api/migrations/run', 'AdminController@executarMigracoes');
 
 return $app;

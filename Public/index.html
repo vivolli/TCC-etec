@@ -53,6 +53,45 @@
             font-weight:600;
         }
 
+        .nav-list a:not(.login-icon-link){
+            display:inline-block;
+            padding:6px 10px;
+            border-radius:10px;
+            transition:color .2s ease, text-shadow .2s ease;
+        }
+
+        .nav-list a:not(.login-icon-link):hover{
+            color:#0b63f6;
+            background:rgba(147, 197, 253, 0.30);
+            text-shadow:0 0 8px rgba(59, 130, 246, 0.38);
+        }
+
+        .login-icon-link{
+            display:inline-flex;
+            align-items:center;
+            justify-content:center;
+            width:46px;
+            height:46px;
+            border-radius:999px;
+            transition:transform .18s ease, box-shadow .18s ease, background-color .18s ease;
+        }
+
+        .login-icon-link img{
+            width:31px;
+            height:31px;
+            display:block;
+        }
+
+        .login-icon-link:hover{
+            transform:translateY(-1px);
+            box-shadow:0 6px 14px rgba(15, 23, 42, .12);
+        }
+
+        .login-icon-link:focus-visible{
+            outline:3px solid #0b63f6;
+            outline-offset:2px;
+        }
+
         /* HERO */
         .hero-home{
             padding:80px 0;
@@ -245,7 +284,11 @@
                 <li><a href="/TCC-etec/vestibular">Vestibular</a></li>
                 <li><a href="/TCC-etec/biblioteca">Biblioteca</a></li>
                 <li><a href="/TCC-etec/contato">Contato</a></li>
-                <li><a href="/TCC-etec/login">Perfil</a></li>
+                <li>
+                    <a href="/TCC-etec/login" class="login-icon-link" aria-label="Entrar no login">
+                        <img src="/TCC-etec/img/login-icon.svg" alt="Login">
+                    </a>
+                </li>
             </ul>
         </nav>
     </div>

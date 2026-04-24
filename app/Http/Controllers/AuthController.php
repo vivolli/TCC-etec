@@ -46,11 +46,6 @@ class AuthController extends Controller
     public function showForm(): void
     {
         Auth::start();
-        if (isset($_GET['logout'])) {
-            Auth::logout();
-            header('Location: /TCC-etec/login?success=' . urlencode('Você saiu com sucesso.'));
-            exit;
-        }
 
         $perfil = $this->normalizeProfile($_GET['perfil'] ?? null) ?? 'admin';
         $redirect = $this->authService->sanitizeRedirect($_GET['redirect'] ?? null, '/TCC-etec/');
@@ -97,7 +92,14 @@ class AuthController extends Controller
         $userModel = $this->authService->getUserModel();
         $userModel->recordAudit($result['user']['id'], 'login_realizado', $result['audit']);
 
-        $target = $redirectSafe ?: $this->authService->defaultRedirectForRole($result['user']['papel'] ?? '');
+        $defaultTarget = $this->authService->defaultRedirectForRole($result['user']['papel'] ?? '');
+
+        // Prioriza redirect solicitado apenas quando não é o destino genérico da home.
+        // Isso garante que, após login direto pela tela, cada perfil vá para sua área.
+        $target = ($redirectSafe !== '' && $redirectSafe !== '/TCC-etec/' && $redirectSafe !== '/TCC-etec')
+            ? $redirectSafe
+            : $defaultTarget;
+
         header('Location: ' . $target);
         exit;
     }
@@ -105,7 +107,7 @@ class AuthController extends Controller
     public function logout(): void
     {
         Auth::logout();
-        header('Location: /TCC-etec/login?success=' . urlencode('Você saiu com sucesso.'));
+        header('Location: /TCC-etec/');
         exit;
     }
 

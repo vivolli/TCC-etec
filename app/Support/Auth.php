@@ -6,10 +6,7 @@ use App\Core\SessionManager;
 
 class Auth
 {
-    private static array $adminRoles = ['adm', 'administrador', 'admin'];
-    private static array $professorRoles = ['professor', 'prof', 'docente'];
-    private static array $secretariaRoles = ['secretaria', 'secretário', 'secretariao', 'secretaria_adj', 'funcionario'];
-    private static array $studentRoles = ['aluno', 'estudante', 'student'];
+    // ✅ Roles agora centralizadas em RoleManager
 
     public static function start(): void
     {
@@ -66,19 +63,18 @@ class Auth
     {
         self::requireAuth($redirect);
         $role = self::role();
-        $allowed = array_map('strtolower', (array)$roles);
+        $rolesArray = (array)$roles;
         
-        if ($roles === 'admin' || (is_array($roles) && $roles === ['admin'])) {
-            $allowed = self::$adminRoles;
-        } elseif ($roles === 'professor' || (is_array($roles) && $roles === ['professor'])) {
-            $allowed = self::$professorRoles;
-        } elseif ($roles === 'secretaria' || (is_array($roles) && $roles === ['secretaria'])) {
-            $allowed = self::$secretariaRoles;
-        } elseif ($roles === 'aluno' || (is_array($roles) && $roles === ['aluno'])) {
-            $allowed = self::$studentRoles;
+        // ✅ Usar RoleManager para verificar autorização centralizada
+        $isAuthorized = false;
+        foreach ($rolesArray as $requiredRole) {
+            if (RoleManager::isInGroup($role, $requiredRole)) {
+                $isAuthorized = true;
+                break;
+            }
         }
         
-        if (!in_array($role, $allowed, true)) {
+        if (!$isAuthorized) {
             header('HTTP/1.1 403 Forbidden');
             echo 'Acesso negado';
             exit;

@@ -3,16 +3,14 @@
 namespace App\Services;
 
 use App\Models\User;
+use App\Support\RoleManager;
 
 class AuthService
 {
     private User $users;
     private LoginRateLimiter $limiter;
 
-    private const ADMIN_ROLES = ['adm', 'administrador', 'admin'];
-    private const PROFESSOR_ROLES = ['professor', 'prof', 'docente'];
-    private const SECRETARIA_ROLES = ['secretaria', 'secretário', 'secretariao', 'secretaria_adj', 'funcionario'];
-    private const STUDENT_ROLES = ['aluno', 'estudante', 'student'];
+    // ✅ Roles agora centralizadas em RoleManager
 
     public function __construct(?User $users = null, ?LoginRateLimiter $limiter = null)
     {
@@ -111,43 +109,14 @@ class AuthService
 
     public function profileMatches(?string $profile, string $role): bool
     {
-        if ($profile === null || $profile === '') {
-            return true;
-        }
-
-        $profile = strtolower($profile);
-        $role = strtolower($role);
-
-        switch ($profile) {
-            case 'admin':
-                return in_array($role, self::ADMIN_ROLES, true);
-            case 'professor':
-                return in_array($role, self::PROFESSOR_ROLES, true);
-            case 'secretaria':
-                return in_array($role, self::SECRETARIA_ROLES, true);
-            case 'aluno':
-                return in_array($role, self::STUDENT_ROLES, true);
-            default:
-                return true;
-        }
+        // ✅ Delegado para RoleManager (centralizado)
+        return RoleManager::profileMatches($profile, $role);
     }
 
     public function defaultRedirectForRole(string $role): string
     {
-        $role = strtolower($role);
-        if (in_array($role, self::ADMIN_ROLES, true)) {
-            return '/TCC-etec/admin';
-        }
-        if (in_array($role, self::PROFESSOR_ROLES, true)) {
-            return '/TCC-etec/professor';
-        }
-        if (in_array($role, self::SECRETARIA_ROLES, true)) {
-            return '/TCC-etec/secretaria';
-        }
-        if (in_array($role, self::STUDENT_ROLES, true)) {
-            return '/TCC-etec/aluno';
-        }
-        return '/TCC-etec/';
+        // ✅ Delegado para RoleManager (centralizado)
+        return RoleManager::getDefaultRedirectForRole($role);
     }
 
     public function formatAttemptMessage(string $base, int $remainingAttempts): string

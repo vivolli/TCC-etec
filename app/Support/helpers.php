@@ -31,7 +31,7 @@ if (!function_exists('config_path')) {
 if (!function_exists('resource_path')) {
     function resource_path(string $path = ''): string
     {
-        return base_path('resources' . ($path ? '/' . ltrim($path, '/') : ''));
+        return app_path('resources' . ($path ? '/' . ltrim($path, '/') : ''));
     }
 }
 

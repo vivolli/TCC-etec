@@ -3,22 +3,26 @@
 namespace App\Http\Controllers;
 
 use App\Core\Controller;
+use App\Core\Database;
 use App\Models\Livro;
 use App\Models\Noticia;
 use App\Models\Funcionario;
 use App\Support\Auth;
+use PDO;
 
 class AdminController extends Controller
 {
     private Livro $livroModel;
     private Noticia $noticiaModel;
     private Funcionario $funcionarioModel;
+    private \App\Models\User $userModel;
 
     public function __construct()
     {
         $this->livroModel = new Livro();
         $this->noticiaModel = new Noticia();
         $this->funcionarioModel = new Funcionario();
+        $this->userModel = new \App\Models\User();
     }
 
     public function painel(): void
@@ -104,6 +108,7 @@ class AdminController extends Controller
         $autor = isset($_POST['autor']) ? trim((string)$_POST['autor']) : '';
         $editora = isset($_POST['editora']) ? trim((string)$_POST['editora']) : '';
         $isbn = isset($_POST['isbn']) ? trim((string)$_POST['isbn']) : '';
+        $link_pdf = isset($_POST['link_pdf']) ? trim((string)$_POST['link_pdf']) : '';
         $copias = isset($_POST['copias']) ? (int)$_POST['copias'] : 0;
 
         if (empty($titulo) || empty($autor) || $copias <= 0) {
@@ -111,16 +116,29 @@ class AdminController extends Controller
             exit;
         }
 
+        $imagem_capa = null;
+        if (isset($_FILES['imagem_capa']) && $_FILES['imagem_capa']['error'] === UPLOAD_ERR_OK) {
+            $ext = pathinfo($_FILES['imagem_capa']['name'], PATHINFO_EXTENSION);
+            $nomeArquivo = uniqid('capa_livro_') . '.' . $ext;
+            $caminho = __DIR__ . '/../../../public/uploads/livros/' . $nomeArquivo;
+            if (!is_dir(dirname($caminho))) {
+                mkdir(dirname($caminho), 0777, true);
+            }
+            if (move_uploaded_file($_FILES['imagem_capa']['tmp_name'], $caminho)) {
+                $imagem_capa = '/uploads/livros/' . $nomeArquivo;
+            }
+        }
+
         try {
-            $stmt = $GLOBALS['pdo']->prepare('
+            $stmt = Database::connection()->prepare('
                 INSERT INTO biblioteca_livros
-                (titulo, autor, editora, isbn, copias_totais, copias_disponiveis, disponivel, criado_em)
-                VALUES (?, ?, ?, ?, ?, ?, ?, NOW())
+                (titulo, autor, editora, isbn, copias_totais, copias_disponiveis, disponivel, imagem_capa, link_pdf, criado_em)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
             ');
 
             $disponivel = $copias > 0 ? 1 : 0;
 
-            if ($stmt->execute([$titulo, $autor, $editora, $isbn, $copias, $copias, $disponivel])) {
+            if ($stmt->execute([$titulo, $autor, $editora, $isbn, $copias, $copias, $disponivel, $imagem_capa, $link_pdf])) {
                 header('Location: /TCC-etec/admin/livros?success=' . urlencode('Livro criado com sucesso.'));
             } else {
                 header('Location: /TCC-etec/admin/livros?error=' . urlencode('Erro ao criar livro.'));
@@ -153,18 +171,34 @@ class AdminController extends Controller
             $titulo = isset($_POST['titulo']) ? trim((string)$_POST['titulo']) : $livro['titulo'];
             $autor = isset($_POST['autor']) ? trim((string)$_POST['autor']) : $livro['autor'];
             $editora = isset($_POST['editora']) ? trim((string)$_POST['editora']) : $livro['editora'];
+            $isbn = isset($_POST['isbn']) ? trim((string)$_POST['isbn']) : $livro['isbn'];
+            $link_pdf = isset($_POST['link_pdf']) ? trim((string)$_POST['link_pdf']) : ($livro['link_pdf'] ?? '');
             $copias = isset($_POST['copias']) ? (int)$_POST['copias'] : $livro['copias_totais'];
+            $copias_disponiveis = isset($_POST['copias_disponiveis']) ? (int)$_POST['copias_disponiveis'] : $livro['copias_disponiveis'];
 
-            $stmt = $GLOBALS['pdo']->prepare('
+            $imagem_capa = $livro['imagem_capa'] ?? null;
+            if (isset($_FILES['imagem_capa']) && $_FILES['imagem_capa']['error'] === UPLOAD_ERR_OK) {
+                $ext = pathinfo($_FILES['imagem_capa']['name'], PATHINFO_EXTENSION);
+                $nomeArquivo = uniqid('capa_livro_') . '.' . $ext;
+                $caminho = __DIR__ . '/../../../public/uploads/livros/' . $nomeArquivo;
+                if (!is_dir(dirname($caminho))) {
+                    mkdir(dirname($caminho), 0777, true);
+                }
+                if (move_uploaded_file($_FILES['imagem_capa']['tmp_name'], $caminho)) {
+                    $imagem_capa = '/uploads/livros/' . $nomeArquivo;
+                }
+            }
+
+            $stmt = Database::connection()->prepare('
                 UPDATE biblioteca_livros
-                SET titulo = ?, autor = ?, editora = ?, copias_totais = ?, disponivel = ?
+                SET titulo = ?, autor = ?, editora = ?, isbn = ?, copias_totais = ?, copias_disponiveis = ?, disponivel = ?, imagem_capa = ?, link_pdf = ?
                 WHERE id = ?
             ');
 
             $disponivel = $copias > 0 ? 1 : 0;
 
-            if ($stmt->execute([$titulo, $autor, $editora, $copias, $disponivel, $livroId])) {
-                header('Location: /TCC-etec/admin/livros?success=' . urlencode('Livro atualizado.'));
+            if ($stmt->execute([$titulo, $autor, $editora, $isbn, $copias, $copias_disponiveis, $disponivel, $imagem_capa, $link_pdf, $livroId])) {
+                header('Location: /TCC-etec/admin/livros?success=' . urlencode('Livro atualizado com sucesso.'));
             } else {
                 header('Location: /TCC-etec/admin/livros?error=' . urlencode('Erro ao atualizar livro.'));
             }
@@ -188,7 +222,7 @@ class AdminController extends Controller
                 exit;
             }
 
-            $stmt = $GLOBALS['pdo']->prepare('DELETE FROM biblioteca_livros WHERE id = ?');
+            $stmt = Database::connection()->prepare('DELETE FROM biblioteca_livros WHERE id = ?');
 
             if ($stmt->execute([$livroId])) {
                 header('Location: /TCC-etec/admin/livros?success=' . urlencode('Livro removido.'));
@@ -202,31 +236,66 @@ class AdminController extends Controller
         exit;
     }
 
-    public function gerenciarNoticias(): void
+    public function gerenciarUsuarios(): void
+    {
+        Auth::start();
+        Auth::requireRole('admin');
+        
+        $usuarios = $this->userModel->paginate(0, 1000);
+        
+        echo $this->view('admin/usuarios', [
+            'usuarios' => $usuarios
+        ]);
+    }
+
+    public function criarUsuario(): void
     {
         Auth::start();
         Auth::requireRole('admin');
 
-        try {
-            $pagina = isset($_GET['page']) ? max(1, (int)$_GET['page']) : 1;
-            $limite = 20;
-            $offset = ($pagina - 1) * $limite;
+        $email = $_POST['email'] ?? '';
+        $senha = $_POST['senha'] ?? '';
+        $nome = $_POST['nome_completo'] ?? '';
+        $papel = $_POST['papel'] ?? 'aluno';
 
-            $noticias = $this->noticiaModel->listar($limite, $offset);
-            $totalNoticias = $this->noticiaModel->contar();
-            $totalPaginas = ceil($totalNoticias / $limite);
-
-            echo $this->view('admin/noticias', [
-                'noticias' => $noticias,
-                'pagina_atual' => $pagina,
-                'total_paginas' => $totalPaginas,
-                'total_noticias' => $totalNoticias
-            ]);
-        } catch (\Throwable $e) {
-            error_log('Erro ao listar noticias: ' . $e->getMessage());
-            header('Location: /TCC-etec/admin?error=' . urlencode('Erro ao carregar noticias.'));
+        if (!preg_match('/\b[a-zA-Z0-9._%+-]+@(edu\.com\.br|edu\.gov\.br|fatec\.sp\.gov\.br|etec\.sp\.gov\.br)\b/i', $email)) {
+            header('Location: /TCC-etec/admin/cms/usuarios?error=' . urlencode('Email fora do domínio educacional permitido.'));
             exit;
         }
+
+        $senhaHash = password_hash($senha, PASSWORD_BCRYPT);
+        
+        $this->userModel->create([
+            'email' => $email,
+            'nome_completo' => $nome,
+            'papel' => $papel,
+            'senha_hash' => $senhaHash,
+            'ativo' => 1
+        ]);
+        
+        header('Location: /TCC-etec/admin/cms/usuarios?success=1');
+    }
+
+    public function excluirUsuario($id): void
+    {
+        Auth::start();
+        Auth::requireRole('admin');
+
+        $this->userModel->delete($id);
+        
+        header('Location: /TCC-etec/admin/cms/usuarios?deleted=1');
+    }
+
+    public function gerenciarNoticias(): void
+    {
+        Auth::start();
+        Auth::requireRole('admin');
+        
+        $noticias = $this->noticiaModel->all();
+        
+        echo $this->view('admin/noticias', [
+            'noticias' => $noticias
+        ]);
     }
 
     public function criarNoticia(): void
@@ -234,106 +303,141 @@ class AdminController extends Controller
         Auth::start();
         Auth::requireRole('admin');
 
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            header('Location: /TCC-etec/admin/noticias');
-            exit;
-        }
-
-        $titulo = isset($_POST['titulo']) ? trim((string)$_POST['titulo']) : '';
-        $conteudo = isset($_POST['conteudo']) ? trim((string)$_POST['conteudo']) : '';
-        $perfil_destino = isset($_POST['perfil_destino']) ? trim((string)$_POST['perfil_destino']) : 'aluno';
-        $publicada = isset($_POST['publicada']) ? 1 : 0;
-
-        if (empty($titulo) || empty($conteudo)) {
-            header('Location: /TCC-etec/admin/noticias?error=' . urlencode('Preencha os campos obrigatórios.'));
-            exit;
-        }
-
-        try {
-            $slug = strtolower(trim(preg_replace('/[^a-z0-9]+/i', '-', $titulo), '-'));
-
-            if ($this->noticiaModel->criar([
-                'titulo' => $titulo,
-                'slug' => $slug,
-                'conteudo' => $conteudo,
-                'perfil_destino' => $perfil_destino,
-                'publicada' => $publicada
-            ])) {
-                header('Location: /TCC-etec/admin/noticias?success=' . urlencode('Noticia criada com sucesso.'));
-            } else {
-                header('Location: /TCC-etec/admin/noticias?error=' . urlencode('Erro ao criar noticia.'));
+        $dados = [
+            'titulo' => $_POST['titulo'] ?? '',
+            'conteudo' => $_POST['conteudo'] ?? '',
+            'slug' => strtolower(str_replace(' ', '-', preg_replace('/[^A-Za-z0-9 ]/', '', $_POST['titulo'] ?? ''))),
+            'imagem_capa' => null,
+            'status_carrossel' => isset($_POST['status_carrossel']) ? 1 : 0
+        ];
+        
+        if (isset($_FILES['imagem_capa']) && $_FILES['imagem_capa']['error'] === UPLOAD_ERR_OK) {
+            $ext = pathinfo($_FILES['imagem_capa']['name'], PATHINFO_EXTENSION);
+            $nomeArquivo = uniqid('capa_') . '.' . $ext;
+            $caminho = __DIR__ . '/../../../public/uploads/noticias/' . $nomeArquivo;
+            if (!is_dir(dirname($caminho))) {
+                mkdir(dirname($caminho), 0777, true);
             }
-        } catch (\Throwable $e) {
-            error_log('Erro ao criar noticia: ' . $e->getMessage());
-            header('Location: /TCC-etec/admin/noticias?error=' . urlencode('Erro ao processar criação.'));
+            if (move_uploaded_file($_FILES['imagem_capa']['tmp_name'], $caminho)) {
+                $dados['imagem_capa'] = '/uploads/noticias/' . $nomeArquivo;
+            }
         }
-        exit;
+
+        $this->noticiaModel->criar($dados);
+        
+        header('Location: /TCC-etec/admin/cms/noticias?success=1');
     }
 
-    public function editarNoticia(int $noticiaId): void
+    public function excluirNoticia($id): void
     {
         Auth::start();
         Auth::requireRole('admin');
 
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            header('Location: /TCC-etec/admin/noticias');
-            exit;
-        }
-
-        try {
-            $noticia = $this->noticiaModel->obterPorId($noticiaId);
-
-            if (!$noticia) {
-                header('Location: /TCC-etec/admin/noticias?error=' . urlencode('Noticia não encontrada.'));
-                exit;
-            }
-
-            $titulo = isset($_POST['titulo']) ? trim((string)$_POST['titulo']) : $noticia['titulo'];
-            $conteudo = isset($_POST['conteudo']) ? trim((string)$_POST['conteudo']) : $noticia['conteudo'];
-            $perfil_destino = isset($_POST['perfil_destino']) ? trim((string)$_POST['perfil_destino']) : $noticia['perfil_destino'];
-            $publicada = isset($_POST['publicada']) ? 1 : 0;
-            $slug = strtolower(trim(preg_replace('/[^a-z0-9]+/i', '-', $titulo), '-'));
-
-            if ($this->noticiaModel->atualizar($noticiaId, [
-                'titulo' => $titulo,
-                'slug' => $slug,
-                'conteudo' => $conteudo,
-                'perfil_destino' => $perfil_destino,
-                'publicada' => $publicada
-            ])) {
-                header('Location: /TCC-etec/admin/noticias?success=' . urlencode('Noticia atualizada.'));
-            } else {
-                header('Location: /TCC-etec/admin/noticias?error=' . urlencode('Erro ao atualizar noticia.'));
-            }
-        } catch (\Throwable $e) {
-            error_log('Erro ao editar noticia: ' . $e->getMessage());
-            header('Location: /TCC-etec/admin/noticias?error=' . urlencode('Erro ao processar edição.'));
-        }
-        exit;
+        $this->noticiaModel->deletar($id);
+        
+        header('Location: /TCC-etec/admin/cms/noticias?deleted=1');
     }
 
-    public function deletarNoticia(int $noticiaId): void
+    /**
+     * API: Verificar status das migrações
+     */
+    public function verificarMigracoes(): void
     {
-        Auth::start();
-        Auth::requireRole('admin');
-
+        header('Content-Type: application/json');
+        
         try {
-            $noticia = $this->noticiaModel->obterPorId($noticiaId);
+            $pdo = Database::connection();
+            
+            // Verificar se coluna link_pdf existe na tabela biblioteca_livros
+            $result = $pdo->query("
+                SELECT COUNT(*) as count 
+                FROM INFORMATION_SCHEMA.COLUMNS 
+                WHERE TABLE_NAME = 'biblioteca_livros' 
+                AND COLUMN_NAME = 'link_pdf'
+            ")->fetch(PDO::FETCH_ASSOC);
 
-            if (!$noticia) {
-                header('Location: /TCC-etec/admin/noticias?error=' . urlencode('Noticia não encontrada.'));
-                exit;
-            }
+            $linkPdfExiste = ($result['count'] ?? 0) > 0;
 
-            if ($this->noticiaModel->deletar($noticiaId)) {
-                header('Location: /TCC-etec/admin/noticias?success=' . urlencode('Noticia removida.'));
-            } else {
-                header('Location: /TCC-etec/admin/noticias?error=' . urlencode('Erro ao remover noticia.'));
-            }
-        } catch (\Throwable $e) {
-            error_log('Erro ao deletar noticia: ' . $e->getMessage());
-            header('Location: /TCC-etec/admin/noticias?error=' . urlencode('Erro ao processar exclusão.'));
+            echo json_encode([
+                'sucesso' => true,
+                'link_pdf_existe' => $linkPdfExiste,
+                'mensagem' => $linkPdfExiste ? 'Migrações completas' : 'Migrações pendentes'
+            ]);
+        } catch (\Exception $e) {
+            http_response_code(500);
+            echo json_encode([
+                'sucesso' => false,
+                'erro' => 'Erro ao verificar migrações: ' . $e->getMessage()
+            ]);
         }
-        exit;
+    }
+
+    /**
+     * API: Executar migrações
+     */
+    public function executarMigracoes(): void
+    {
+        header('Content-Type: application/json');
+
+        // Não requer autenticação para migração inicial, mas pode adicionar validação
+        try {
+            $pdo = Database::connection();
+
+            $migrations = [
+                [
+                    'name' => 'Adicionar coluna link_pdf em biblioteca_livros',
+                    'sql' => 'ALTER TABLE biblioteca_livros ADD COLUMN IF NOT EXISTS link_pdf VARCHAR(500) NULL DEFAULT NULL AFTER imagem_capa'
+                ],
+            ];
+
+            $results = [];
+            $successCount = 0;
+            $errorCount = 0;
+
+            foreach ($migrations as $migration) {
+                try {
+                    $pdo->exec($migration['sql']);
+                    $results[] = [
+                        'name' => $migration['name'],
+                        'status' => 'sucesso',
+                        'mensagem' => 'Executada com sucesso'
+                    ];
+                    $successCount++;
+                } catch (\Exception $e) {
+                    // Se a coluna já existe, é um sucesso
+                    if (stripos($e->getMessage(), 'Duplicate column') !== false) {
+                        $results[] = [
+                            'name' => $migration['name'],
+                            'status' => 'sucesso',
+                            'mensagem' => 'Coluna já existe'
+                        ];
+                        $successCount++;
+                    } else {
+                        $results[] = [
+                            'name' => $migration['name'],
+                            'status' => 'erro',
+                            'mensagem' => $e->getMessage()
+                        ];
+                        $errorCount++;
+                    }
+                }
+            }
+
+            echo json_encode([
+                'sucesso' => $errorCount === 0,
+                'migrações' => $results,
+                'resumo' => [
+                    'total' => count($migrations),
+                    'sucesso' => $successCount,
+                    'erro' => $errorCount
+                ]
+            ]);
+        } catch (\Exception $e) {
+            http_response_code(500);
+            echo json_encode([
+                'sucesso' => false,
+                'erro' => 'Erro ao executar migrações: ' . $e->getMessage()
+            ]);
+        }
     }
 }

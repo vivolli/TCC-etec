@@ -68,19 +68,35 @@ class Noticia
         return $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
     }
 
+    public function listarParaCarrossel(int $limite = 5): array
+    {
+        $stmt = $this->pdo->prepare('
+            SELECT *
+            FROM noticias
+            WHERE status_carrossel = 1
+            ORDER BY data_publicacao DESC
+            LIMIT ?
+        ');
+        $stmt->bindValue(1, $limite, PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+    }
+
     public function criar(array $dados): bool
     {
         $stmt = $this->pdo->prepare('
             INSERT INTO noticias
-            (titulo, slug, conteudo, perfil_destino, publicada, data_publicacao)
-            VALUES (?, ?, ?, ?, ?, NOW())
+            (titulo, slug, conteudo, perfil_destino, publicada, imagem_capa, status_carrossel, data_publicacao)
+            VALUES (?, ?, ?, ?, ?, ?, ?, NOW())
         ');
         return $stmt->execute([
             $dados['titulo'] ?? '',
             $dados['slug'] ?? '',
             $dados['conteudo'] ?? '',
             $dados['perfil_destino'] ?? 'publico',
-            $dados['publicada'] ?? 0
+            $dados['publicada'] ?? 1,
+            $dados['imagem_capa'] ?? null,
+            $dados['status_carrossel'] ?? 0
         ]);
     }
 
@@ -88,7 +104,7 @@ class Noticia
     {
         $stmt = $this->pdo->prepare('
             UPDATE noticias
-            SET titulo = ?, slug = ?, conteudo = ?, perfil_destino = ?, publicada = ?, atualizado_em = NOW()
+            SET titulo = ?, slug = ?, conteudo = ?, perfil_destino = ?, publicada = ?, imagem_capa = COALESCE(?, imagem_capa), status_carrossel = ?, atualizado_em = NOW()
             WHERE id = ?
         ');
         return $stmt->execute([
@@ -96,7 +112,9 @@ class Noticia
             $dados['slug'] ?? '',
             $dados['conteudo'] ?? '',
             $dados['perfil_destino'] ?? 'publico',
-            $dados['publicada'] ?? 0,
+            $dados['publicada'] ?? 1,
+            $dados['imagem_capa'] ?? null,
+            $dados['status_carrossel'] ?? 0,
             $id
         ]);
     }
@@ -140,26 +158,8 @@ class Noticia
 
     public function findById(int $id): ?array
     {
+        // ✅ Alias para obterPorId (compatibilidade)
         return $this->obterPorId($id);
-    }
-
-    public function create(array $dados): int
-    {
-        $stmt = $this->pdo->prepare('INSERT INTO noticias (titulo, conteudo, autor_id, publicado, criado_em)
-            VALUES (?, ?, ?, ?, NOW())');
-        $stmt->execute([
-            $dados['titulo'],
-            $dados['conteudo'],
-            $dados['autor_id'] ?? 0,
-            $dados['publicado'] ?? 0,
-        ]);
-        return (int)$this->pdo->lastInsertId();
-    }
-
-    public function delete(int $id): void
-    {
-        $stmt = $this->pdo->prepare('DELETE FROM noticias WHERE id = ?');
-        $stmt->execute([$id]);
     }
 
     public function recordAudit(int $usuarioId, string $acao, ?array $meta = null): void

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Core\Controller;
+use App\Core\Database;
 use App\Models\Funcionario;
 use App\Models\Emprestimo;
 use App\Models\Student;
@@ -132,7 +133,7 @@ class SecretariaController extends Controller
             $limite = 25;
             $offset = ($pagina - 1) * $limite;
 
-            $emprestimos = $GLOBALS['pdo']->prepare('
+            $emprestimos = Database::connection()->prepare('
                 SELECT
                     e.*,
                     u.nome_completo,
@@ -150,7 +151,7 @@ class SecretariaController extends Controller
             $emprestimos->execute();
             $listaEmprestimos = $emprestimos->fetchAll(\PDO::FETCH_ASSOC) ?: [];
 
-            $totalStmt = $GLOBALS['pdo']->query('SELECT COUNT(*) as total FROM biblioteca_emprestimos');
+            $totalStmt = Database::connection()->query('SELECT COUNT(*) as total FROM biblioteca_emprestimos');
             $totalEmprestimos = (int)($totalStmt->fetch(\PDO::FETCH_ASSOC)['total'] ?? 0);
             $totalPaginas = ceil($totalEmprestimos / $limite);
 
@@ -178,7 +179,7 @@ class SecretariaController extends Controller
         }
 
         try {
-            $emprestimo = $GLOBALS['pdo']->prepare('
+            $emprestimo = Database::connection()->prepare('
                 SELECT * FROM biblioteca_emprestimos WHERE id = ?
             ');
             $emprestimo->execute([$emprestimoId]);
@@ -269,7 +270,7 @@ class SecretariaController extends Controller
             $limite = 50;
             $offset = ($pagina - 1) * $limite;
 
-            $auditoria = $GLOBALS['pdo']->prepare('
+            $auditoria = Database::connection()->prepare('
                 SELECT
                     *
                 FROM auditoria
@@ -282,7 +283,7 @@ class SecretariaController extends Controller
             $auditoria->execute();
             $registros = $auditoria->fetchAll(\PDO::FETCH_ASSOC) ?: [];
 
-            $totalStmt = $GLOBALS['pdo']->query('SELECT COUNT(*) as total FROM auditoria');
+            $totalStmt = Database::connection()->query('SELECT COUNT(*) as total FROM auditoria');
             $totalRegistros = (int)($totalStmt->fetch(\PDO::FETCH_ASSOC)['total'] ?? 0);
             $totalPaginas = ceil($totalRegistros / $limite);
 

@@ -9,7 +9,7 @@ class Frontend
 {
     public static function renderLanding(): string
     {
-        $csrfToken = Csrf::generateToken();
+        $csrfToken = Csrf::getToken();
         $latestNews = self::loadLatestNews();
 
         $newsCards = '';
@@ -17,7 +17,14 @@ class Frontend
             $title = htmlspecialchars($news['titulo'] ?? 'Novidade FETEL', ENT_QUOTES, 'UTF-8');
             $summary = htmlspecialchars(self::truncateText($news['conteudo'] ?? $news['resumo'] ?? '', 120), ENT_QUOTES, 'UTF-8');
             $date = isset($news['data_publicacao']) ? date('d/m/Y', strtotime($news['data_publicacao'])) : ($news['data'] ?? 'Atualização FETEL');
+            
+            $imgTag = '';
+            if (!empty($news['imagem_capa'])) {
+                $imgTag = "<img src=\"/TCC-etec" . htmlspecialchars($news['imagem_capa']) . "\" alt=\"Capa\" style=\"width:100%;height:150px;object-fit:cover;border-radius:14px;margin-bottom:15px;\">";
+            }
+
             $newsCards .= "<article class=\"card card-news\">
+                        $imgTag
                         <div class=\"news-meta\"><span>Notícia</span><time datetime=\"{$news['data_publicacao']}\">{$date}</time></div>
                         <h3>{$title}</h3>
                         <p>{$summary}</p>
@@ -845,8 +852,8 @@ HTML;
     private static function loadLatestNews(): array
     {
         try {
-            $noticiaModel = new Noticia();
-            $news = $noticiaModel->listar(4, 0);
+            $noticiaModel = new \App\Models\Noticia();
+            $news = $noticiaModel->listarParaCarrossel(3);
             if (is_array($news) && count($news) > 0) {
                 return $news;
             }

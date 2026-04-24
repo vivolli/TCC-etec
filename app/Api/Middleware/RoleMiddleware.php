@@ -4,13 +4,11 @@ namespace App\Api\Middleware;
 
 use App\Core\MiddlewareInterface;
 use App\Core\Request;
+use App\Support\RoleManager;
 
 class RoleMiddleware implements MiddlewareInterface
 {
-    private const ADMIN_ROLES = ['adm', 'administrador', 'admin'];
-    private const PROFESSOR_ROLES = ['professor', 'prof', 'docente'];
-    private const SECRETARIA_ROLES = ['secretaria', 'secretário', 'secretariao', 'secretaria_adj', 'funcionario'];
-    private const STUDENT_ROLES = ['aluno', 'estudante', 'student'];
+    // ✅ Roles agora centralizadas em RoleManager
 
     private ?string $parameter;
 
@@ -46,37 +44,10 @@ class RoleMiddleware implements MiddlewareInterface
     {
         foreach ($allowedRoles as $allowedRole) {
             $allowedRole = strtolower($allowedRole);
-            if ($allowedRole === $role) {
+            
+            // ✅ Usa RoleManager para checagem centralizada
+            if (RoleManager::isInGroup($role, $allowedRole)) {
                 return true;
-            }
-
-            switch ($allowedRole) {
-                case 'admin':
-                    if (in_array($role, self::ADMIN_ROLES, true)) {
-                        return true;
-                    }
-                    break;
-                case 'professor':
-                    if (in_array($role, self::PROFESSOR_ROLES, true)) {
-                        return true;
-                    }
-                    break;
-                case 'secretaria':
-                    if (in_array($role, self::SECRETARIA_ROLES, true)) {
-                        return true;
-                    }
-                    break;
-                case 'aluno':
-                case 'student':
-                    if (in_array($role, self::STUDENT_ROLES, true)) {
-                        return true;
-                    }
-                    break;
-                default:
-                    if ($allowedRole === $role) {
-                        return true;
-                    }
-                    break;
             }
         }
 

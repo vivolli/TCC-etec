@@ -3,6 +3,15 @@ namespace App\Core;
 
 class Csrf
 {
+    public static function getToken(): string
+    {
+        if (session_status() === PHP_SESSION_NONE) session_start();
+        if (empty($_SESSION['_csrf_token'])) {
+            $_SESSION['_csrf_token'] = bin2hex(random_bytes(16));
+        }
+        return $_SESSION['_csrf_token'];
+    }
+
     public static function generateToken(): string
     {
         if (session_status() === PHP_SESSION_NONE) session_start();
